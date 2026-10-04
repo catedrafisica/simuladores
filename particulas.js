@@ -1,3 +1,4 @@
+/* © 2026 Augusto Rodrigo Alterats. Uso educativo con cita de autoría. */
 const particulasCanvas = document.querySelector('#particulas');
 if (particulasCanvas) {
   const particulasCtx = particulasCanvas.getContext('2d');

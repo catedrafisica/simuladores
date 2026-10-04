@@ -1,3 +1,4 @@
+/* © 2026 Augusto Rodrigo Alterats. Uso educativo con cita de autoría. */
 'use strict';
 (() => {
   const $ = id => document.getElementById(id);

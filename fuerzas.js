@@ -1,3 +1,4 @@
+/* © 2026 Augusto Rodrigo Alterats. Uso educativo con cita de autoría. */
 'use strict';
 const fuerzas = [{m:4,a:0,color:'#2563eb',nombre:'F₁'},{m:3,a:90,color:'#c2410c',nombre:'F₂'}];
 const $ = id => document.getElementById(id);

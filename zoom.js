@@ -1,3 +1,4 @@
+/* © 2026 Augusto Rodrigo Alterats. Uso educativo con cita de autoría. */
 document.querySelectorAll('.zoom-instrumento').forEach(section => {
   const viewport = section.querySelector('.escala-ventana');
   const canvas = viewport.querySelector('canvas');
