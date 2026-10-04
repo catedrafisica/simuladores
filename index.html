@@ -301,6 +301,54 @@
       text-align: center;
     }
 
+    .instituciones {
+      margin: 32px auto 26px;
+      max-width: 760px;
+    }
+
+    .instituciones h2 {
+      margin-bottom: 20px;
+      color: var(--tinta);
+      font-family: Georgia, 'Times New Roman', serif;
+      font-size: clamp(1.7rem, 4vw, 2.4rem);
+    }
+
+    .logos-instituciones {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 20px;
+    }
+
+    .logo-institucion {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 190px;
+      padding: 28px;
+      border: 1px solid var(--linea);
+      border-radius: 8px;
+      background: #fff;
+      transition: transform .18s ease, box-shadow .18s ease;
+    }
+
+    .logo-institucion:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 22px #14204218;
+    }
+
+    .logo-institucion:focus-visible {
+      outline: 3px solid var(--verde);
+      outline-offset: 4px;
+    }
+
+    .logo-institucion img {
+      display: block;
+      width: 100%;
+      max-width: 300px;
+      height: 100px;
+      object-fit: contain;
+    }
+
     .separador-version {
       width: min(480px, 85%);
       margin: 10px auto;
@@ -329,6 +377,15 @@
 
       .opcion {
         min-height: 180px;
+      }
+
+      .logos-instituciones {
+        grid-template-columns: 1fr;
+        gap: 14px;
+      }
+
+      .logo-institucion {
+        min-height: 160px;
       }
     }
 
@@ -606,6 +663,17 @@
         la Facultad de Ciencias Agrarias surgen de la necesidad de contar con un entorno de aprendizaje reproducible que
         involucre activamente a los estudiantes. Mediante una interfaz intuitiva, promueven la exploración, la
         formulación de hipótesis, la resolución de problemas aplicados y el descubrimiento de fenómenos físicos.</p>
+      <section class="instituciones" aria-labelledby="titulo-instituciones">
+        <h2 id="titulo-instituciones">Nuestra comunidad académica</h2>
+        <div class="logos-instituciones">
+          <a class="logo-institucion" href="https://www.agr.unne.edu.ar/">
+            <img src="assets/logo-fca.png" alt="Facultad de Ciencias Agrarias (FCA)" width="477" height="75" loading="lazy">
+          </a>
+          <a class="logo-institucion" href="https://www.unne.edu.ar/">
+            <img src="assets/logo-unne.png" alt="Universidad Nacional del Nordeste (UNNE)" width="262" height="75" loading="lazy">
+          </a>
+        </div>
+      </section>
       <hr class="separador-version">
       <p><span class="icono-version">✳️</span> Versión <span data-app-version></span></p>
       <p>© Copyright <strong>2026 Qubit Física</strong>. Todos los derechos reservados.</p>
