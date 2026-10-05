@@ -24,8 +24,9 @@ $('zoomAlejar').addEventListener('click',()=>actualizarZoom(zoom-.25));
 $('zoomAcercar').addEventListener('click',()=>actualizarZoom(zoom+.25));
 function restablecerZoom(){pan={x:0,y:0};actualizarZoom(1);}
 $('zoomRestablecer').addEventListener('click',restablecerZoom);
-function dibujarAngulo(f,i){
- const radio=38+i*32;
+function dibujarAngulo(f,i,s){
+ // Ajustar el arco a la longitud dibujada, incluso al cambiar la escala del plano.
+ const radio=f.m>0?Math.min(38+i*32,f.m*s*.65):38+i*32;
  const punto=(r,a)=>[350+r*Math.cos(a*Math.PI/180),280-r*Math.sin(a*Math.PI/180)];
  let arco='';
  if(f.m>0&&f.a>0){
@@ -58,7 +59,7 @@ function render(){
  if($('componentes').checked){html+=line(r.x,0,r.x,r.y,'#237548',1.5,true)+line(0,r.y,r.x,r.y,'#237548',1.5,true)+arrow(0,0,r.x,0,'#237548','Rₓ',true)+arrow(0,0,0,r.y,'#237548','Rᵧ',true);}
  r.c.forEach((c,i)=>{html+=arrow(0,0,c.x,c.y,fuerzas[i].color,fuerzas[i].nombre)+`<circle class="punta" data-fuerza="${i}" cx="${350+c.x*s}" cy="${280-c.y*s}" r="10" fill="${fuerzas[i].color}" fill-opacity=".18" stroke="${fuerzas[i].color}"/>`;});
  html+=arrow(0,0,r.x,r.y,'#237548','R');if(r.m<1e-8)html+='<circle cx="350" cy="280" r="5" fill="#237548"/>';
- html+=fuerzas.map(dibujarAngulo).join('');
+ html+=fuerzas.map((f,i)=>dibujarAngulo(f,i,s)).join('');
  svg.innerHTML='<title id="tituloPlano">Suma vectorial de fuerzas</title><desc id="descripcionPlano">'+`Resultante ${fmt(r.m)} N. Componentes X ${fmt(r.x)} N e Y ${fmt(r.y)} N. `+fuerzas.map(f=>`${f.nombre}: ${f.m>0?`ángulo ${fmt(f.a)}° desde +X en sentido antihorario`:'ángulo indefinido por módulo cero'}.`).join(' ')+'</desc>'+html;
  $('escala').innerHTML=`Escala: <strong>${fmt(step)}N</strong> / mín. div.`;
  $('resumen').innerHTML=`<div class="dato"><span>Módulo de la resultante</span><strong>${fmt(r.m)} N</strong></div><div class="dato"><span>Dirección desde +X</span><strong>${r.a===null?'Indefinida':fmt(r.a)+'°'}</strong></div><div class="dato"><span>Estado del sistema</span><strong>${r.m<1e-8?'Equilibrio':'Fuerza neta ≠ 0'}</strong></div>`;
