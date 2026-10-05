@@ -132,3 +132,28 @@ body.grafico-ampliado { overflow:hidden; }
 .enrase-ampliado .practica { display:flex; flex-wrap:wrap; gap:8px; margin:0; }
 .enrase-ampliado #estado { margin:8px 0 0; font-size:.9rem; }
 .enrase-ampliado #estado:empty { display:none; }
+
+/* Reservar espacio para comprobar el enrase sin cubrir el instrumento en móviles. */
+@media (max-width: 600px), (max-width: 1000px) and (pointer: coarse) {
+  .zoom-instrumento.ampliada .contenedor-menisco {
+    display:flex;
+    flex-direction:column;
+    gap:8px;
+  }
+  .zoom-instrumento.ampliada .contenedor-menisco .escala-ventana {
+    height:auto;
+    min-width:0;
+  }
+  .enrase-ampliado {
+    position:static;
+    flex-shrink:0;
+    width:100%;
+    max-height:45%;
+    box-sizing:border-box;
+    background:#fff;
+  }
+}
+@media (max-width: 1000px) and (orientation: landscape) and (pointer: coarse) {
+  .zoom-instrumento.ampliada .contenedor-menisco { flex-direction:row; }
+  .enrase-ampliado { width:240px; max-width:45%; max-height:100%; }
+}
