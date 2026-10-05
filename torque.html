@@ -10,6 +10,9 @@
 <link rel="stylesheet" href="fuerzas.css">
 <link rel="stylesheet" href="responsive.css">
 <style>
+.leyenda .f1 { color:#2563eb; }
+.leyenda .f2 { color:#0e7490; }
+.leyenda .r { color:#237548; }
 .simbolo-vector, .simbolo-versor { position:relative; display:inline-block; padding-top:0.3em; line-height:1; }
 .simbolo-vector::before, .simbolo-versor::before { position:absolute; top:-0.2em; left:50%; transform:translateX(-50%); font-size:0.8em; line-height:1; }
 .simbolo-vector::before { content:"→"; }
@@ -123,7 +126,7 @@
 <section class="panel grafico" aria-label="Representación del momento">
 <div class="cabecera"><h2>Fuerza sobre una barra</h2><span id="longitudBarra">Barra de 2 m</span></div>
 <svg id="plano" viewBox="0 0 700 560" role="img" aria-labelledby="tituloPlano descripcionPlano"><title id="tituloPlano">Momento de una fuerza respecto de O</title><desc id="descripcionPlano"></desc></svg>
-<div class="leyenda"><span class="f1">● Fuerza F</span><span class="f2">● Brazo perpendicular d</span><span class="r">● Vector posición r</span></div>
+<div class="leyenda"><span class="r">● Vector posición r</span><span class="f1">● Fuerza F</span><span class="f2">● Brazo perpendicular d</span></div>
 <p class="ayuda">Arrastra el punto de aplicación sobre la barra o la punta de la fuerza para cambiar su módulo y ángulo. Las longitudes y las fuerzas usan escalas distintas.</p>
 <div class="zoom-controles" role="group" aria-label="Zoom del gráfico">
 <span>Zoom</span>

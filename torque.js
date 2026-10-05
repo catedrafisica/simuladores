@@ -65,10 +65,10 @@
       const projection = (origin.x - ax) * ux;
       const hx = ax + projection * ux, hy = ay + projection * uy;
       drawing += line(ax - ux * 700, ay - uy * 700, ax + ux * 700, ay + uy * 700, '#2563eb', 'stroke-dasharray="7 6" opacity=".35"');
-      drawing += line(origin.x, ay, hx, hy, '#c2410c', 'stroke-dasharray="5 4"')
-        + label((origin.x + hx) / 2 - 20, (ay + hy) / 2 - 12, `b = ${fmt(c.d)} m`, '#c2410c');
+      drawing += line(origin.x, ay, hx, hy, '#0e7490', 'stroke-dasharray="5 4"')
+        + label((origin.x + hx) / 2 - 20, (ay + hy) / 2 - 12, `b = ${fmt(c.d)} m`, '#0e7490');
       const vx = -uy, vy = ux, side = projection < 0 ? 1 : -1;
-      drawing += `<path d="M${hx + side * ux * 10},${hy + side * uy * 10} l${vx * 10},${vy * 10} l${-side * ux * 10},${-side * uy * 10}" fill="none" stroke="#c2410c"/>`;
+      drawing += `<path d="M${hx + side * ux * 10},${hy + side * uy * 10} l${vx * 10},${vy * 10} l${-side * ux * 10},${-side * uy * 10}" fill="none" stroke="#0e7490"/>`;
       // Both components start at the point where the force is applied.
       drawing += line(tx, ay, tx, ty, '#2563eb', 'stroke-dasharray="4 4" opacity=".4"')
         + line(ax, ty, tx, ty, '#2563eb', 'stroke-dasharray="4 4" opacity=".4"');
