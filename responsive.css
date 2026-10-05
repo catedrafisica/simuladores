@@ -112,3 +112,8 @@ body.grafico-ampliado { overflow:hidden; }
 .zoom-instrumento.ampliada .escala-ventana { flex:1; min-height:0; aspect-ratio:auto; overflow:auto; }
 .zoom-instrumento.ampliada .escala-ventana canvas { display:block; width:calc(var(--ancho-instrumento) * var(--zoom-instrumento, 1)) !important; height:auto; margin-inline:auto; }
 .zoom-instrumento.ampliada .zoom-controles, .ampliada .leyenda, .ampliada .zoom-recorrido { flex-shrink:0; }
+.enrase-ampliado { position:absolute; top:14px; right:14px; width: min(320px, calc(100% - 28px)); max-height:calc(100% - 80px); overflow:auto; padding:12px; border:1px solid #c9d2e4; border-radius:8px; background:#fffffff2; }
+.enrase-ampliado[hidden] { display:none; }
+.enrase-ampliado .practica { display:flex; flex-wrap:wrap; gap:8px; margin:0; }
+.enrase-ampliado #estado { margin:8px 0 0; font-size:.9rem; }
+.enrase-ampliado #estado:empty { display:none; }

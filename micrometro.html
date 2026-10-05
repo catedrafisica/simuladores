@@ -39,7 +39,10 @@
     select { padding:8px 10px; border:1px solid #aebbd2; border-radius:6px; background:#fff; color:var(--oscuro); font:inherit; }
     input[type="range"] { width:min(220px, 48vw); accent-color:var(--azul); }
     input[type="checkbox"] { accent-color:var(--azul); }
-    #lectura { margin-left:auto; color:var(--azul); font-size:1.1rem; font-weight:bold; }
+    .contenedor-micrometro { position:relative; }
+    #lectura { position:absolute; right:14px; bottom:14px; max-width:calc(100% - 28px); padding:6px 10px; border-radius:6px; background:#ffffffeb; text-align:right; color:var(--azul); font-size:clamp(.8rem, 2vw, 1.1rem); font-weight:bold; pointer-events:none; }
+    .zoom-instrumento.ampliada .contenedor-micrometro { flex:1; min-height:0; }
+    .zoom-instrumento.ampliada .contenedor-micrometro .escala-ventana { height:100%; }
     canvas { display:block; width:100%; height:auto; border:1px solid #c9d2e4; border-radius:8px; background:#fff; touch-action:none; cursor:default; }
     .componentes { display:grid; grid-template-columns:repeat(3,1fr); gap:1px; margin-top:12px; background:#d7deea; border:1px solid #d7deea; border-radius:6px; overflow:hidden; }
     .componente { padding:10px 12px; background:#f8f9fc; }
@@ -60,7 +63,6 @@
       .instrumento-icono { width:46px; height:46px; flex-basis:46px; }
       h1 { font-size:1.25rem; }
       .componentes { grid-template-columns:1fr; }
-      #lectura { width:100%; margin-left:0; }
     }
     @media (prefers-reduced-motion:reduce) {
       *,*::before,*::after { scroll-behavior:auto !important; }
@@ -196,7 +198,6 @@
       <label for="divisionesNonio">Nonio:</label>
     <select class="form-select w-auto" id="divisionesNonio"><option value="10" selected>10 divisiones</option><option value="20">20 divisiones</option><option value="50">50 divisiones</option></select>
     </div>
-    <output id="lectura" aria-live="polite"></output>
   </div>
   <section class="zoom-instrumento" aria-label="Ampliación de la escala">
     <div class="zoom-controles">
@@ -207,8 +208,11 @@
       <button type="button" data-zoom="restablecer">Restablecer</button>
     </div>
     <p class="zoom-ayuda">Amplía para leer las marcas. Usa «Recorrer escala» para ver otras partes; puedes seguir arrastrando el instrumento.</p>
+    <div class="contenedor-micrometro">
     <div class="escala-ventana" tabindex="0" role="region" aria-label="Escala ampliable; usa las flechas para recorrerla">
   <canvas id="micrometro" width="1024" height="390" aria-label="Micrómetro con escalas del manguito, tambor y nonio"></canvas>
+    </div>
+    <output id="lectura" aria-live="polite"></output>
     </div>
     <label class="zoom-recorrido" hidden>Recorrer escala
       <input type="range" min="0" max="100" value="0" step="0.1" aria-label="Recorrer la escala ampliada">
@@ -317,7 +321,7 @@
       linea(x,nonioY,x,nonioY+(esCoincidencia?30:17),esCoincidencia?2.6:1.1,esCoincidencia?'#c2410c':'#263238');
       if(i%5===0||i===divisionesNonio-1) texto(String(i),x,nonioY+44,11,'center',esCoincidencia?'#c2410c':'#263238');
     }
-    if(mostrarCoincidencia.checked) texto(`Coincidencia n = ${coincidencia}`,canvas.width-40,nonioY+68,13,'right','#c2410c');
+    if(mostrarCoincidencia.checked) texto(`Coincidencia n = ${coincidencia}`,40,nonioY+68,13,'left','#c2410c');
     const lecturaManguito=marcaManguito*0.5;
     const lecturaTambor=indiceTambor*paso/divisionesTambor;
     const lecturaNonio=coincidencia*precisionMm();

@@ -14,6 +14,22 @@ document.querySelectorAll('.vista-grafico, .zoom-instrumento').forEach((vista, i
   boton.setAttribute('aria-controls', vista.id);
   const canvas = vista.querySelector('canvas');
   const ventana = vista.querySelector('.escala-ventana');
+  const contenedorMenisco = vista.querySelector('.contenedor-menisco');
+  const controlesEnrase = contenedorMenisco
+    ? [document.querySelector('.practica'), document.getElementById('estado')].filter(Boolean)
+    : [];
+  const posicionesEnrase = controlesEnrase.map(control => {
+    const posicion = document.createComment('Posición normal del control de enrase');
+    control.before(posicion);
+    return posicion;
+  });
+  let panelEnrase;
+  if (controlesEnrase.length) {
+    panelEnrase = document.createElement('div');
+    panelEnrase.className = 'enrase-ampliado';
+    panelEnrase.hidden = true;
+    contenedorMenisco.append(panelEnrase);
+  }
   function ajustarInstrumento() {
     if (!canvas || !ventana) return;
     const ancho = Math.min(ventana.clientWidth, ventana.clientHeight * canvas.width / canvas.height);
@@ -27,6 +43,13 @@ document.querySelectorAll('.vista-grafico, .zoom-instrumento').forEach((vista, i
     boton.setAttribute('aria-label', etiqueta);
     boton.title = etiqueta;
     boton.setAttribute('aria-pressed', String(ampliada));
+    if (panelEnrase) {
+      panelEnrase.hidden = !ampliada;
+      controlesEnrase.forEach((control, i) => {
+        if (ampliada) panelEnrase.append(control);
+        else posicionesEnrase[i].after(control);
+      });
+    }
     ajustarInstrumento();
   }
   boton.addEventListener('click', async () => {

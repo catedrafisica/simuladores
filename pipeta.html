@@ -40,7 +40,10 @@
     .opciones legend { font-weight:bold; }
     .opciones label { display:flex; align-items:center; gap:6px; cursor:pointer; }
     select { padding:8px 10px; border:1px solid #aebbd2; border-radius:6px; background:white; color:var(--oscuro); font:inherit; }
-    #lectura { margin-left:auto; font-size:1.15rem; font-weight:bold; color:var(--azul); }
+    .contenedor-menisco { position:relative; }
+    #lectura { position:absolute; right:14px; bottom:14px; max-width:calc(100% - 28px); padding:6px 10px; border-radius:6px; background:#ffffffeb; text-align:right; font-size:clamp(.8rem, 2vw, 1.15rem); font-weight:bold; color:var(--azul); pointer-events:none; }
+    .zoom-instrumento.ampliada .contenedor-menisco { flex:1; min-height:0; }
+    .zoom-instrumento.ampliada .contenedor-menisco .escala-ventana { height:100%; }
     canvas { width:100%; max-width:100%; height:auto; display:block; border:1px solid #c9d2e4; border-radius:10px; background:#fff; touch-action:none; cursor:default; }
     .componentes { display:grid; grid-template-columns:repeat(2,1fr); gap:1px; margin-top:12px; margin-bottom:16px; background:#d7deea; border:1px solid #d7deea; border-radius:6px; overflow:hidden; }
     .componentes[hidden] { display:none; }
@@ -187,7 +190,6 @@
     <div class="control-grupo"><label for="menisco">Líquido:</label><select id="menisco" class="form-select w-auto"><option value="concavo">Moja las paredes · cóncavo</option><option value="convexo">No moja las paredes · convexo</option></select></div>
     <div class="control-grupo"><label for="posicion">Nivel del líquido:</label><input id="posicion" type="range" min="0" max="10" step="0.005" value="3.65"></div>
     <button id="subir" type="button">Subir líquido ↑</button><button id="bajar" type="button">Bajar líquido ↓</button>
-    <output id="lectura" aria-live="polite" hidden></output>
   </div>
   <div class="practica"><label for="objetivo">Marca objetivo (ml):</label><input id="objetivo" type="number" min="0" max="10" step="0.1" value="4"><button id="comprobar" type="button">Comprobar enrase</button><span id="division"></span></div>
   <output id="estado" aria-live="polite"></output>
@@ -200,8 +202,11 @@
       <button type="button" data-zoom="restablecer">Restablecer</button>
     </div>
     <p class="zoom-ayuda">Amplía para leer las marcas del menisco. Usa «Recorrer escala» para subir o bajar por la pipeta; puedes seguir arrastrando el líquido.</p>
+    <div class="contenedor-menisco">
     <div class="escala-ventana" tabindex="0" role="region" aria-label="Escala ampliable; usa las flechas para recorrerla">
       <canvas id="pipeta" width="1000" height="760" role="img" aria-label="Pipeta graduada de 0 a 10 ml con menisco móvil. Usa los controles para ajustar el nivel."></canvas>
+    </div>
+    <output id="lectura" aria-live="polite" hidden></output>
     </div>
     <label class="zoom-recorrido" hidden>Recorrer escala
       <input type="range" min="0" max="100" step="0.1" value="0" aria-label="Recorrer verticalmente la escala de la pipeta">
