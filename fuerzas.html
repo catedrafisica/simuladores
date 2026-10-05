@@ -115,7 +115,8 @@
 <button id="restablecer" class="reiniciar">Restablecer</button>
 </section>
 <section class="panel grafico" aria-label="Representación gráfica">
-<div class="cabecera"><h2>Plano cartesiano</h2><span id="escala"></span></div>
+<div id="vistaGrafico" class="vista-grafico">
+<div class="cabecera"><h2>Plano cartesiano</h2><div class="acciones-grafico"><span id="escala"></span></div></div>
 <svg id="plano" viewBox="0 0 700 560" role="img" aria-labelledby="tituloPlano descripcionPlano"><title id="tituloPlano">Suma vectorial de fuerzas</title><desc id="descripcionPlano">Fuerzas y resultante sobre los ejes X e Y.</desc></svg>
 
 <div class="leyenda"><span class="f1">● F₁</span><span class="f2">● F₂</span><span class="r">● Resultante R</span><span>┄ Líneas auxiliares</span></div>
@@ -126,6 +127,7 @@
 <output id="zoomNivel" aria-live="polite">100 %</output>
 <button type="button" id="zoomAcercar" aria-label="Acercar gráfico" aria-controls="plano">+</button>
 <button type="button" id="zoomRestablecer" aria-controls="plano">Restablecer zoom</button>
+</div>
 </div>
 <h3>Ejemplos para explorar</h3>
 <div class="ejemplos"><button data-ejemplo="rectangulo">Perpendiculares (F₁=4N;F₂=3N)</button><button data-ejemplo="oblicuas">Fuerzas oblicuas</button><button data-ejemplo="equilibrio">Equilibrio</button></div>
@@ -140,6 +142,7 @@
   <p>Diseñado por <a href="https://github.com/qubitfisica">augusalterats</a> | <a href="https://qubitfisica.com.ar/LICENSE.md">Licencia MIT</a></p>
 </footer>
 <script src="fuerzas.js"></script>
+<script src="pantalla-completa.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script src="particulas.js"></script>
 <script src="version.js"></script>

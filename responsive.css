@@ -90,3 +90,25 @@ footer, .nota, #lectura { overflow-wrap: anywhere; }
   .ecuacion { font-size: 1rem; }
   code { white-space: normal; overflow-wrap: anywhere; }
 }
+
+/* Pantalla completa de los gráficos y los instrumentos. */
+.vista-grafico .cabecera { display:flex; align-items:center; flex-wrap:wrap; }
+.acciones-grafico { display:flex; align-items:center; gap:12px; margin-left:auto; margin-bottom:8px; }
+.pantalla-completa { display:grid; place-items:center; width:44px; height:44px; padding:10px; margin-left:auto; flex-shrink:0; }
+.cabecera > .pantalla-completa { margin-bottom:8px; }
+.zoom-instrumento > .zoom-controles { margin-bottom:8px; }
+.pantalla-completa svg { display:block; width:22px; height:22px; }
+.icono-minimizar { display:none; }
+.ampliada { width:100%; height:100%; padding:16px; background:#fff; color:#17243f; display:flex; flex-direction:column; overflow:hidden; box-sizing:border-box; }
+.vista-grafico.ampliada #plano { flex:1; min-height:0; height:0; aspect-ratio:auto; }
+.ampliada .cabecera h2 { margin:0; }
+.ampliada .cabecera { flex-shrink:0; margin-bottom:8px; }
+.ampliada .ayuda, .ampliada .zoom-ayuda { display:none; }
+.vista-grafico.ampliada .zoom-controles { margin:8px 0 0; }
+.ampliada .icono-maximizar { display:none; }
+.ampliada .icono-minimizar { display:block; }
+.ampliada-respaldo { position:fixed; inset:0; z-index:2000; height:100dvh; }
+body.grafico-ampliado { overflow:hidden; }
+.zoom-instrumento.ampliada .escala-ventana { flex:1; min-height:0; aspect-ratio:auto; overflow:auto; }
+.zoom-instrumento.ampliada .escala-ventana canvas { display:block; width:calc(var(--ancho-instrumento) * var(--zoom-instrumento, 1)) !important; height:auto; margin-inline:auto; }
+.zoom-instrumento.ampliada .zoom-controles, .ampliada .leyenda, .ampliada .zoom-recorrido { flex-shrink:0; }

@@ -25,6 +25,7 @@ $('zoomAcercar').addEventListener('click',()=>actualizarZoom(zoom+.25));
 function restablecerZoom(){pan={x:0,y:0};actualizarZoom(1);}
 $('zoomRestablecer').addEventListener('click',restablecerZoom);
 function dibujarAngulo(f,i,s){
+ if(f.m===0) return '';
  // Ajustar el arco a la longitud dibujada, incluso al cambiar la escala del plano.
  const radio=f.m>0?Math.min(38+i*32,f.m*s*.65):38+i*32;
  const punto=(r,a)=>[350+r*Math.cos(a*Math.PI/180),280-r*Math.sin(a*Math.PI/180)];
@@ -39,7 +40,7 @@ function dibujarAngulo(f,i,s){
   arco=`<path class="arco-angulo" d="${recorrido}" fill="none" stroke="${f.color}" stroke-width="2"/>`;
  }
  const [x,y]=punto(radio+18,f.m>0?f.a/2:0);
- const etiqueta=f.m>0?`θ${i===0?'₁':'₂'} = ${fmt(f.a)}°`:`θ${i===0?'₁':'₂'} indefinido (0 N)`;
+ const etiqueta=`θ${i===0?'₁':'₂'} = ${fmt(f.a)}°`;
  return `<g class="angulo-fuerza" pointer-events="none">${arco}<text class="etiqueta-angulo" x="${x}" y="${y}" text-anchor="middle" dominant-baseline="middle" fill="${f.color}">${etiqueta}</text></g>`;
 }
 function render(){

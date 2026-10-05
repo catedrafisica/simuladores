@@ -29,6 +29,8 @@ document.querySelectorAll('.zoom-instrumento').forEach(section => {
       : (viewport.scrollTop + viewport.clientHeight / 2) / canvas.offsetHeight;
     const verticalCenter = (viewport.scrollTop + viewport.clientHeight / 2) / canvas.offsetHeight;
     zoom = Math.max(1, Math.min(4, next));
+    section.dataset.zoom = zoom;
+    section.style.setProperty("--zoom-instrumento", zoom);
     canvas.style.width = `${zoom * 100}%`;
     viewport.scrollLeft = zoom === 1 ? 0 : center * canvas.offsetWidth - viewport.clientWidth / 2;
     if (vertical) viewport.scrollTop = zoom === 1 ? 0 : centerY * canvas.offsetHeight - viewport.clientHeight / 2;

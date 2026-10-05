@@ -50,7 +50,10 @@
     .opciones legend { font-weight:bold; }
     .opciones label { display:flex; align-items:center; gap:6px; cursor:pointer; }
     select { padding:8px 10px; border:1px solid #aebbd2; border-radius:6px; background:white; color:var(--oscuro); font:inherit; }
-    #lectura { margin-left:auto; font-size:1.15rem; font-weight:bold; color:var(--azul); }
+    .contenedor-vernier { position:relative; }
+    #lectura { position:absolute; right:14px; bottom:14px; max-width:calc(100% - 28px); padding:6px 10px; border-radius:6px; background:#ffffffeb; text-align:right; font-size:clamp(.8rem, 2vw, 1.15rem); font-weight:bold; color:var(--azul); pointer-events:none; }
+    .zoom-instrumento.ampliada .contenedor-vernier { flex:1; min-height:0; }
+    .zoom-instrumento.ampliada .contenedor-vernier .escala-ventana { height:100%; }
     canvas { width:100%; max-width:100%; height:auto; display:block; border:1px solid #c9d2e4; border-radius:10px; background:#fff; touch-action:none; cursor:default; }
     .componentes { display:grid; grid-template-columns:repeat(2,1fr); gap:1px; margin-top:12px; margin-bottom:16px; background:#d7deea; border:1px solid #d7deea; border-radius:6px; overflow:hidden; }
     .componentes[hidden] { display:none; }
@@ -213,7 +216,6 @@
       <option value="in">in</option>
     </select>
     </div>
-    <output id="lectura" aria-live="polite" hidden>(L ± ΔL) = (37,4 ± 0,1) mm</output>
   </div>
   <section class="zoom-instrumento" aria-label="Ampliación de la escala">
     <div class="zoom-controles">
@@ -224,8 +226,11 @@
       <button type="button" data-zoom="restablecer">Restablecer</button>
     </div>
     <p class="zoom-ayuda">Amplía para leer las marcas. Usa «Recorrer escala» para ver otras partes; puedes seguir arrastrando el instrumento.</p>
+    <div class="contenedor-vernier">
     <div class="escala-ventana" tabindex="0" role="region" aria-label="Escala ampliable; usa las flechas para recorrerla">
   <canvas id="vernier" width="1024" height="390" aria-label="Regla Vernier interactiva"></canvas>
+    </div>
+    <output id="lectura" aria-live="polite" hidden>(L ± ΔL) = (37,4 ± 0,1) mm</output>
     </div>
     <label class="zoom-recorrido" hidden>Recorrer escala
       <input type="range" min="0" max="100" value="0" step="0.1" aria-label="Recorrer la escala ampliada">
@@ -428,5 +433,6 @@
 <script src="particulas.js"></script>
 <script src="version.js"></script>
 <script src="zoom.js"></script>
+<script src="pantalla-completa.js"></script>
 </body>
 </html>
