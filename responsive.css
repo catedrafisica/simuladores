@@ -92,6 +92,21 @@ footer, .nota, #lectura { overflow-wrap: anywhere; }
 }
 
 /* Pantalla completa de los gráficos y los instrumentos. */
+.aviso-girar-celular { display:none; }
+@media (max-width: 600px) and (orientation: portrait) and (pointer: coarse) {
+  .ampliada .aviso-girar-celular {
+    display:block;
+    flex-shrink:0;
+    margin-bottom:12px;
+    padding:10px 12px;
+    border:1px solid #c9d2e4;
+    border-radius:8px;
+    background:#eef4ff;
+    color:#17243f;
+    text-align:center;
+    font-weight:600;
+  }
+}
 .vista-grafico .cabecera { display:flex; align-items:center; flex-wrap:wrap; }
 .acciones-grafico { display:flex; align-items:center; gap:12px; margin-left:auto; margin-bottom:8px; }
 .pantalla-completa { display:grid; place-items:center; width:44px; height:44px; padding:10px; margin-left:auto; flex-shrink:0; }

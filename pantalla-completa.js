@@ -12,6 +12,11 @@ document.querySelectorAll('.vista-grafico, .zoom-instrumento').forEach((vista, i
     cabecera.append(boton);
   }
   boton.setAttribute('aria-controls', vista.id);
+  const avisoGirar = document.createElement('div');
+  avisoGirar.className = 'aviso-girar-celular';
+  avisoGirar.setAttribute('role', 'status');
+  avisoGirar.textContent = 'Girar el celular para ver mejor el simulador.';
+  vista.prepend(avisoGirar);
   const canvas = vista.querySelector('canvas');
   const ventana = vista.querySelector('.escala-ventana');
   const contenedorMenisco = vista.querySelector('.contenedor-menisco');
