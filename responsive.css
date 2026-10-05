@@ -130,6 +130,8 @@ body.grafico-ampliado { overflow:hidden; }
 .enrase-ampliado { position:absolute; top:14px; right:14px; width: min(320px, calc(100% - 28px)); max-height:calc(100% - 80px); overflow:auto; padding:12px; border:1px solid #c9d2e4; border-radius:8px; background:#fffffff2; }
 .enrase-ampliado[hidden] { display:none; }
 .enrase-ampliado .practica { display:flex; flex-wrap:wrap; gap:8px; margin:0; }
+.enrase-ampliado #lectura { position:static; display:block; max-width:100%; margin:8px 0 0; text-align:left; }
+.enrase-ampliado #lectura[hidden] { display:none; }
 .enrase-ampliado #estado { margin:8px 0 0; font-size:.9rem; }
 .enrase-ampliado #estado:empty { display:none; }
 

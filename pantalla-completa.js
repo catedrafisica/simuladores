@@ -21,7 +21,7 @@ document.querySelectorAll('.vista-grafico, .zoom-instrumento').forEach((vista, i
   const ventana = vista.querySelector('.escala-ventana');
   const contenedorMenisco = vista.querySelector('.contenedor-menisco');
   const controlesEnrase = contenedorMenisco
-    ? [document.querySelector('.practica'), document.getElementById('estado')].filter(Boolean)
+    ? [document.querySelector('.practica'), document.getElementById('lectura'), document.getElementById('estado')].filter(Boolean)
     : [];
   const posicionesEnrase = controlesEnrase.map(control => {
     const posicion = document.createComment('Posición normal del control de enrase');
