@@ -18,6 +18,10 @@
   function draw() {
     const value = Number(nivel.value), target = Number(objetivo.value), d = Number(divisiones.value);
     const reading = withinTolerance(value, target) ? target : value;
+    const precision = 1/d;
+    const decimals = Math.max(1, (String(precision).split('.')[1] || '').length);
+    const formatReading = n => n.toLocaleString('es-AR', { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
+    const measurement = `(${formatReading(reading)} ± ${formatReading(precision)}) ml`;
     const concave = tipo.value === 'concavo', mid = y(value), edge = mid + (concave ? -18 : 18);
     ctx.clearRect(0,0,1000,760);
     label('PIPETA GRADUADA · 10 ml',450,30,22,'#314986','center');
@@ -47,9 +51,9 @@
     }
     label(concave?'Moja las paredes · menisco cóncavo':'No moja las paredes · menisco convexo',450,755,18,'#314986','center');
     $('lectura').hidden=!$('mostrarResultado').checked;
-    $('lectura').textContent=`Lectura: ${format(reading)} ml`;
+    $('lectura').textContent=`Lectura: ${measurement}`;
     $('division').textContent=`Cada división: ${format(1/d)} ml`;
-    canvas.setAttribute('aria-label',`Pipeta de 10 ml con menisco ${concave?'cóncavo':'convexo'}. Objetivo ${format(target)} ml.${$('mostrarResultado').checked ? ` Lectura ${format(reading)} ml.` : ''}`);
+    canvas.setAttribute('aria-label',`Pipeta de 10 ml con menisco ${concave?'cóncavo':'convexo'}. Objetivo ${format(target)} ml.${$('mostrarResultado').checked ? ` Lectura ${measurement}.` : ''}`);
   }
   function setLevel(value) {
     nivel.value=String(Math.round(Math.min(10,Math.max(0,value))*200)/200);
