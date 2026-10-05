@@ -94,7 +94,7 @@ footer, .nota, #lectura { overflow-wrap: anywhere; }
 /* Pantalla completa de los gráficos y los instrumentos. */
 .aviso-girar-celular { display:none; }
 @media (max-width: 600px) and (orientation: portrait) and (pointer: coarse) {
-  .ampliada .aviso-girar-celular {
+  .zoom-instrumento.ampliada .aviso-girar-celular {
     display:block;
     flex-shrink:0;
     margin-bottom:12px;
