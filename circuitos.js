@@ -4,6 +4,10 @@ const positive = '+';
 const negative = '−';
 const nodeNames = [...'ABCDEFGH'];
 const maximumResistors = 16;
+const commonFlowColor = '#a23c00';
+const branchFlowColors = ['#0068a0', '#087443', '#932583', '#a62640',
+  '#5342a6', '#796000', '#007577', '#944d21', '#344f77', '#606c24',
+  '#9b405e', '#563a70', '#277a3c', '#00618a', '#744124', '#394d9c'];
 const examples = {
   inicial: [[positive, negative, 100]],
   serie: [[positive, 'A', 100], ['A', negative, 200]],
@@ -98,6 +102,7 @@ const animateCurrent = byId('animar-corriente');
 const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
 let flowSegments = [];
 let animationFrame = 0;
+let flowStartTime = 0;
 const formatter = new Intl.NumberFormat('es-AR', { maximumSignificantDigits: 5 });
 const scientific = new Intl.NumberFormat('es-AR', { notation: 'scientific', maximumSignificantDigits: 4 });
 let intermediate = [];
@@ -225,14 +230,45 @@ function renderEditor() {
   refresh();
 }
 
+function getBranchColors(nodes, readings, tolerance) {
+  const incoming = new Map(nodes.map(node => [node, []]));
+  const outgoing = new Map(nodes.map(node => [node, []]));
+  readings.forEach(({ current }, index) => {
+    if (Math.abs(current) <= tolerance) return;
+    const { from, to } = resistors[index];
+    const start = current > 0 ? from : to;
+    const end = current > 0 ? to : from;
+    const branch = { index, end };
+    outgoing.get(start).push(branch);
+    incoming.get(end).push(branch);
+  });
+
+  const colors = new Map();
+  let colorIndex = 0;
+  for (const branches of outgoing.values()) {
+    if (branches.length < 2) continue;
+    for (const firstBranch of branches) {
+      const color = branchFlowColors[colorIndex++];
+      let branch = firstBranch;
+      while (branch && !colors.has(branch.index)) {
+        colors.set(branch.index, color);
+        const next = outgoing.get(branch.end);
+        branch = incoming.get(branch.end).length === 1 && next.length === 1 ? next[0] : null;
+      }
+    }
+  }
+  return colors;
+}
+
 function paintCurrent(time = 0) {
   flowContext.save();
   flowContext.resetTransform();
   flowContext.clearRect(0, 0, flowCanvas.width, flowCanvas.height);
   flowContext.restore();
-  flowContext.fillStyle = '#a23c00';
   const moving = animateCurrent.checked && !reducedMotion.matches;
-  for (const { x, y, dx, dy, length } of flowSegments) {
+  const elapsedSeconds = Math.max(0, time - flowStartTime) / 1000;
+  for (const { x, y, dx, dy, length, speed, color } of flowSegments) {
+    flowContext.fillStyle = color;
     const middle = length / 2;
     // A fixed arrow remains visible when animation is off.
     flowContext.beginPath();
@@ -242,7 +278,7 @@ function paintCurrent(time = 0) {
     flowContext.fill();
     if (!moving) continue;
     const spacing = Math.min(length - 8, 34);
-    for (let position = 4 + (time * .05) % spacing; position < length - 4; position += spacing) {
+    for (let position = 4 + (elapsedSeconds * speed) % spacing; position < length - 4; position += spacing) {
       flowContext.beginPath();
       flowContext.arc(x + dx * position, y + dy * position, 2.5, 0, Math.PI * 2);
       flowContext.fill();
@@ -253,7 +289,8 @@ function paintCurrent(time = 0) {
 
 function restartCurrent() {
   cancelAnimationFrame(animationFrame);
-  paintCurrent();
+  flowStartTime = performance.now();
+  paintCurrent(flowStartTime);
 }
 
 function drawCircuit(result) {
@@ -290,13 +327,16 @@ function drawCircuit(result) {
   }
 
   const tolerance = (result?.current ?? 0) * Number.EPSILON * 16;
-  function markFlow(x1, y1, x2, y2, current) {
+  const branchColors = getBranchColors(nodes, result?.readings ?? [], tolerance);
+  function markFlow(x1, y1, x2, y2, current, color = commonFlowColor) {
     const length = Math.hypot(x2 - x1, y2 - y1);
     if (Math.abs(current) <= tolerance || length < 16) return;
     const forward = current > 0;
     const direction = forward ? 1 : -1;
+    // Logarithmic scale keeps the wide range of currents readable on screen.
+    const speed = 12 * Math.log1p(Math.abs(current) / 0.001);
     flowSegments.push({ x: forward ? x1 : x2, y: forward ? y1 : y2,
-      dx: direction * (x2 - x1) / length, dy: direction * (y2 - y1) / length, length });
+      dx: direction * (x2 - x1) / length, dy: direction * (y2 - y1) / length, length, speed, color });
   }
 
   const x = node => 40 + nodes.indexOf(node) * 120;
@@ -332,20 +372,21 @@ function drawCircuit(result) {
     const left = Math.min(x(from), x(to));
     const right = Math.max(x(from), x(to));
     const current = (result?.readings[index].current ?? 0) * (x(from) < x(to) ? 1 : -1);
+    const color = branchColors.get(index);
     line([left, y], [left + 34, y]);
-    markFlow(left, y, left + 34, y, current);
-    markFlow(left + 34, y, left + 86, y, current);
+    markFlow(left, y, left + 34, y, current, color);
+    markFlow(left + 34, y, left + 86, y, current, color);
     ctx.strokeRect(left + 34, y - 9, 52, 18);
     ctx.fillText('R' + id, left + 60, y - 15);
     // Gaps at crossed rails show that the resistor is connected only at its ends.
     let start = left + 86;
     for (let crossing = left + 120; crossing < right; crossing += 120) {
       line([start, y], [crossing - 6, y]);
-      markFlow(start, y, crossing - 6, y, current);
+      markFlow(start, y, crossing - 6, y, current, color);
       start = crossing + 6;
     }
     line([start, y], [right, y]);
-    markFlow(start, y, right, y, current);
+    markFlow(start, y, right, y, current, color);
     junction(left, y);
     junction(right, y);
   });
