@@ -41,7 +41,15 @@
 }
 
 .lienzo canvas { display: block; }
-.vista-grafico.ampliada .lienzo { flex: 1; min-height: 0; }
+.vista-grafico.ampliada .lienzo {
+  flex: 1;
+  min-height: 0;
+  place-items: center;
+  overflow: hidden;
+}
+
+.vista-grafico.ampliada .leyenda-corriente { flex-shrink: 0; }
+body.grafico-ampliado .simulador-circuitos { z-index: 12; }
 
 .simulador-circuitos table { text-align: left; font-variant-numeric: tabular-nums; }
 .simulador-circuitos th, .simulador-circuitos td { padding: 8px 5px; white-space: nowrap; }

@@ -87,6 +87,10 @@ const resistorRows = byId('resistencias');
 const nodeControls = byId('nodos');
 const canvas = byId('diagrama');
 const ctx = canvas.getContext('2d');
+const viewport = canvas.closest('.lienzo');
+const diagramView = viewport.closest('.vista-grafico');
+let lastResult = null;
+let fullscreenScale = 1;
 const flowCanvas = byId('flujo-corriente');
 const flowContext = flowCanvas.getContext('2d');
 const animateCurrent = byId('animar-corriente');
@@ -192,7 +196,10 @@ function renderEditor() {
 }
 
 function paintCurrent(time = 0) {
+  flowContext.save();
+  flowContext.resetTransform();
   flowContext.clearRect(0, 0, flowCanvas.width, flowCanvas.height);
+  flowContext.restore();
   flowContext.fillStyle = '#a23c00';
   const moving = animateCurrent.checked && !reducedMotion.matches;
   for (const { x, y, dx, dy, length } of flowSegments) {
@@ -223,11 +230,15 @@ function drawCircuit(result) {
   const nodes = allNodes();
   const width = 80 + (nodes.length - 1) * 120;
   const height = 115 + Math.max(resistors.length, 1) * 58;
-  const ratio = window.devicePixelRatio || 1;
+  const maximized = diagramView.classList.contains('ampliada');
+  fullscreenScale = maximized && viewport.clientWidth > 0 && viewport.clientHeight > 0
+    ? Math.min(viewport.clientWidth / width, viewport.clientHeight / height)
+    : 1;
+  const ratio = (window.devicePixelRatio || 1) * fullscreenScale;
   canvas.width = Math.round(width * ratio);
   canvas.height = Math.round(height * ratio);
-  canvas.style.width = width + 'px';
-  canvas.style.height = height + 'px';
+  canvas.style.width = width * fullscreenScale + 'px';
+  canvas.style.height = height * fullscreenScale + 'px';
   ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
   flowCanvas.width = canvas.width;
   flowCanvas.height = canvas.height;
@@ -326,6 +337,7 @@ function refresh() {
   const result = source.validity.valid && !invalidResistance
     ? solveCircuit(allNodes(), resistors.map(resistor => ({ ...resistor, resistance: Number(resistor.value) })), source.valueAsNumber)
     : null;
+  lastResult = result;
   drawCircuit(result);
   byId('equivalente').textContent = result ? display(result.equivalent) + ' Ω' : '—';
   byId('corriente').textContent = result ? display(result.current) + ' A' : '—';
@@ -358,6 +370,12 @@ function loadExample(example) {
   resistors = components.map(([from, to, value]) => ({ id: nextResistor++, from, to, value }));
   renderEditor();
 }
+
+new ResizeObserver(() => {
+  if (diagramView.classList.contains('ampliada') || fullscreenScale !== 1) {
+    drawCircuit(lastResult);
+  }
+}).observe(viewport);
 
 animateCurrent.addEventListener('change', restartCurrent);
 reducedMotion.addEventListener('change', restartCurrent);
