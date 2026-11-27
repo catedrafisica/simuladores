@@ -15,9 +15,9 @@ const examples = {
   mixto: [[positive, 'A', 100], ['A', negative, 200], ['A', negative, 300]]
 };
 
-function solveCircuit(nodes, resistors, voltage) {
+function solveCircuit(nodes, resistors, voltage, internalResistance = 0) {
   const wires = resistors.filter(({ resistance }) => resistance === 0);
-  if (!wires.length) return solveResistiveCircuit(nodes, resistors, voltage);
+  if (!wires.length) return solveLoad(nodes, resistors, voltage, internalResistance);
 
   function connectedByWires(start, excluded) {
     const connected = new Set([start]);
@@ -32,7 +32,8 @@ function solveCircuit(nodes, resistors, voltage) {
   }
 
   const terminals = connectedByWires(positive);
-  if (terminals.has(negative)) {
+  const shortCircuit = terminals.has(negative);
+  if (shortCircuit && internalResistance === 0) {
     return { shortCircuit: true, closed: true, equivalent: 0, current: null, power: null,
       readings: resistors.map(({ resistance }) => resistance === 0
         ? { voltage: 0, current: null, power: 0 }
@@ -45,10 +46,14 @@ function solveCircuit(nodes, resistors, voltage) {
     for (const member of connectedByWires(node)) representatives.set(member, node);
   }
   const loads = resistors.filter(({ resistance }) => resistance !== 0);
-  const result = solveResistiveCircuit([...new Set(representatives.values())],
+  const result = shortCircuit
+    ? { shortCircuit, closed: true, equivalent: 0, terminalVoltage: 0,
+      current: voltage / internalResistance, power: voltage ** 2 / internalResistance,
+      readings: loads.map(() => ({ voltage: 0, current: 0, power: 0 })) }
+    : solveLoad([...new Set(representatives.values())],
     loads.map(({ from, to, resistance }) => ({
       from: representatives.get(from), to: representatives.get(to), resistance
-    })), voltage);
+    })), voltage, internalResistance);
 
   const outgoing = new Map(nodes.map(node => [node, 0]));
   outgoing.set(positive, -result.current);
@@ -68,6 +73,18 @@ function solveCircuit(nodes, resistors, voltage) {
     return { voltage: 0, current, power: 0 };
   });
   return result;
+}
+
+function solveLoad(nodes, resistors, voltage, internalResistance) {
+  const normalized = solveResistiveCircuit(nodes, resistors, 1);
+  const current = voltage / (normalized.equivalent + internalResistance);
+  const terminalVoltage = voltage / (1 + normalized.current * internalResistance);
+  return { ...normalized, current, terminalVoltage, power: voltage * current,
+    readings: normalized.readings.map(reading => ({
+      voltage: reading.voltage * terminalVoltage,
+      current: reading.current * terminalVoltage,
+      power: reading.power * terminalVoltage ** 2
+    })) };
 }
 
 function solveResistiveCircuit(nodes, resistors, voltage) {
@@ -144,6 +161,7 @@ function solveResistiveCircuit(nodes, resistors, voltage) {
 
 const byId = id => document.getElementById(id);
 const source = byId('fuente');
+const internalResistance = byId('resistencia-interna');
 const resistorRows = byId('resistencias');
 const nodeControls = byId('nodos');
 const canvas = byId('diagrama');
@@ -156,6 +174,7 @@ const flowCanvas = byId('flujo-corriente');
 const flowContext = flowCanvas.getContext('2d');
 const animateCurrent = byId('animar-corriente');
 const currentDirection = byId('sentido-corriente');
+const conventionalDirection = byId('sentido-convencional');
 const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
 let flowSegments = [];
 let animationFrame = 0;
@@ -202,7 +221,12 @@ function display(value) {
   if (value === null) return '—';
   if (value === Infinity) return '∞';
   const absolute = Math.abs(value);
-  if (absolute > 0 && (absolute < 0.0001 || absolute >= 1e7)) return scientific.format(value);
+  if (absolute > 0 && (absolute < 0.1 || absolute > 100)) {
+    const [mantissa, exponent] = scientific.format(value).split('E');
+    const superscript = exponent.replace(/[0-9-]/g, character =>
+      character === '-' ? '⁻' : '⁰¹²³⁴⁵⁶⁷⁸⁹'[character]);
+    return mantissa + ' · 10' + superscript;
+  }
   return formatter.format(value || 0);
 }
 
@@ -324,7 +348,7 @@ function paintCurrent(time = 0) {
   flowContext.clearRect(0, 0, flowCanvas.width, flowCanvas.height);
   flowContext.restore();
   const moving = animateCurrent.checked && !reducedMotion.matches;
-  const electrons = currentDirection.value === 'electrones';
+  const electrons = currentDirection.checked;
   const elapsedSeconds = Math.max(0, time - flowStartTime) / 1000;
   flowContext.strokeStyle = '#fff';
   flowContext.lineWidth = 1.25;
@@ -415,6 +439,21 @@ function drawCircuit(result) {
     ctx.stroke();
   }
 
+  function drawResistor(left, right, y, height = 16) {
+    ctx.strokeRect(left, y - height / 2, right - left, height);
+  }
+
+  function drawWireCrossing(position, y) {
+    ctx.save();
+    // Clear the rail around the bridge so the two wires read as separate paths.
+    ctx.clearRect(position - 2, y - 10, 4, 12);
+    ctx.beginPath();
+    ctx.moveTo(position - 7, y);
+    ctx.quadraticCurveTo(position, y - 14, position + 7, y);
+    ctx.stroke();
+    ctx.restore();
+  }
+
   const tolerance = (result?.current ?? 0) * Number.EPSILON * 16;
   function markFlow(x1, y1, x2, y2, current, color = commonFlowColor) {
     const length = Math.hypot(x2 - x1, y2 - y1);
@@ -488,14 +527,15 @@ function drawCircuit(result) {
     markFlow(left + 34, y, left + 86, y, current, color);
     const isWire = value !== '' && Number(value) === 0;
     if (isWire) line([left + 34, y], [left + 86, y]);
-    else ctx.strokeRect(left + 34, y - 9, 52, 18);
+    else drawResistor(left + 34, left + 86, y);
     ctx.fillText('R' + id + (isWire ? ' (0 Ω)' : ''), left + 60, y - 15);
-    // Gaps at crossed rails show that the resistor is connected only at its ends.
+    // Bridges keep the branch continuous at crossings without a junction.
     let start = left + 86;
     for (let crossing = left + 120; crossing < right; crossing += 120) {
-      line([start, y], [crossing - 6, y]);
-      markFlow(start, y, crossing - 6, y, current, color);
-      start = crossing + 6;
+      line([start, y], [crossing - 7, y]);
+      markFlow(start, y, crossing - 7, y, current, color);
+      drawWireCrossing(crossing, y);
+      start = crossing + 7;
     }
     line([start, y], [right, y]);
     markFlow(start, y, right, y, current, color);
@@ -503,11 +543,21 @@ function drawCircuit(result) {
     junction(right, y);
   });
 
-  const battery = x(positive) + 57;
+  const showInternalResistance = internalResistance.validity.valid && internalResistance.valueAsNumber > 0;
+  const battery = x(positive) + (showInternalResistance ? 28 : 57);
   line([x(positive), bottom], [battery, bottom]);
   line([battery, bottom - 14], [battery, bottom + 14]);
   line([battery + 9, bottom - 8], [battery + 9, bottom + 8]);
-  line([battery + 9, bottom], [x(negative), bottom]);
+  if (showInternalResistance) {
+    const left = battery + 17;
+    const right = left + 22;
+    line([battery + 9, bottom], [left, bottom]);
+    drawResistor(left, right, bottom, 8);
+    line([right, bottom], [x(negative), bottom]);
+    ctx.fillText('r = ' + display(internalResistance.valueAsNumber) + ' Ω', (left + right) / 2, bottom - 14);
+  } else {
+    line([battery + 9, bottom], [x(negative), bottom]);
+  }
   const returnCurrent = -(result?.current ?? 0);
   markFlow(x(positive), bottom, battery, bottom, returnCurrent);
   markFlow(battery + 9, bottom, x(negative), bottom, returnCurrent);
@@ -518,21 +568,31 @@ function drawCircuit(result) {
 function refresh() {
   const invalidResistance = [...resistorRows.querySelectorAll('input')].some(input =>
     !input.validity.valid || (input.valueAsNumber > 0 && input.valueAsNumber < 0.001));
-  const result = source.validity.valid && !invalidResistance
-    ? solveCircuit(allNodes(), resistors.map(resistor => ({ ...resistor, resistance: Number(resistor.value) })), source.valueAsNumber)
+  const internalValue = internalResistance.valueAsNumber;
+  const invalidInternal = !internalResistance.validity.valid || (internalValue > 0 && internalValue < 0.001);
+  const result = source.validity.valid && !invalidResistance && !invalidInternal
+    ? solveCircuit(allNodes(), resistors.map(resistor => ({ ...resistor, resistance: Number(resistor.value) })),
+      source.valueAsNumber, internalValue)
     : null;
   lastResult = result;
   drawCircuit(result);
   byId('equivalente').textContent = result ? display(result.equivalent) + ' Ω' : '—';
+  byId('tension-bornes').textContent = result?.terminalVoltage != null ? display(result.terminalVoltage) + ' V' : '—';
   byId('corriente').textContent = result?.current != null ? display(result.current) + ' A' : '—';
   byId('potencia').textContent = result?.power != null ? display(result.power) + ' W' : '—';
   const status = byId('estado');
   let message = 'Circuito cerrado.';
   if (!source.validity.valid) message = 'Ingresá una tensión entre 0 y 1.000 V.';
+  else if (invalidInternal) message = 'Ingresá una resistencia interna de 0 Ω o entre 0,001 Ω y 1.000.000.000 Ω.';
   else if (invalidResistance) message = 'Ingresá 0 Ω o un valor entre 0,001 Ω y 1.000.000.000 Ω.';
   else if (result.shortCircuit) {
     message = 'Cortocircuito: los bornes de la fuente están unidos por un camino de 0 Ω. ';
-    message += source.valueAsNumber > 0
+    if (internalValue > 0) {
+      message += 'La resistencia interna limita la corriente.';
+      if (result.readings.some(({ current }) => current === null)) {
+        message += ' La corriente en los lazos de 0 Ω queda indeterminada.';
+      }
+    } else message += source.valueAsNumber > 0
       ? 'La corriente crecería sin límite al acercarse a 0 Ω con una fuente ideal.'
       : 'Con una fuente ideal de 0 V, la corriente queda indeterminada.';
   } else {
@@ -574,16 +634,24 @@ new ResizeObserver(() => {
 }).observe(viewport);
 
 function updateCurrentDirection() {
-  const direction = currentDirection.value === 'electrones' ? 'flujo de electrones' : 'corriente convencional';
+  const direction = currentDirection.checked ? 'flujo de electrones' : 'corriente convencional';
   canvas.setAttribute('aria-label', 'Diagrama de conexiones con flechas de ' + direction);
   restartCurrent();
 }
 
-currentDirection.addEventListener('change', updateCurrentDirection);
+currentDirection.addEventListener('change', () => {
+  conventionalDirection.checked = !currentDirection.checked;
+  updateCurrentDirection();
+});
+conventionalDirection.addEventListener('change', () => {
+  currentDirection.checked = !conventionalDirection.checked;
+  updateCurrentDirection();
+});
 animateCurrent.addEventListener('change', restartCurrent);
 reducedMotion.addEventListener('change', restartCurrent);
 source.required = true;
 source.addEventListener('input', refresh);
+internalResistance.addEventListener('input', refresh);
 for (const control of document.querySelectorAll('[data-example]')) {
   control.addEventListener('click', () => loadExample(control.dataset.example));
 }

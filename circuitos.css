@@ -57,6 +57,7 @@
 body.grafico-ampliado .simulador-circuitos { z-index: 12; }
 
 .simulador-circuitos table { text-align: left; font-variant-numeric: tabular-nums; }
+.simulador-circuitos .resultados tr > :not(:first-child) { text-align: center; }
 .simulador-circuitos th, .simulador-circuitos td { padding: 8px 5px; white-space: nowrap; }
 .simulador-circuitos .controles th,
 .simulador-circuitos .controles td { padding: 4px 3px; font-size: .875rem; }
