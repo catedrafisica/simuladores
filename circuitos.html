@@ -147,7 +147,13 @@
           </div>
           <div class="leyenda-corriente">
             <label class="check"><input id="animar-corriente" type="checkbox" checked> Animar corriente</label>
-            <span>Las flechas indican el sentido convencional. A mayor magnitud de corriente, más rápido se mueven los puntos (escala logarítmica).</span>
+            <label>Sentido del flujo
+              <select id="sentido-corriente">
+                <option value="convencional">Corriente convencional (+)</option>
+                <option value="electrones">Flujo de electrones (e⁻)</option>
+              </select>
+            </label>
+            <span>Las flechas indican el sentido elegido. A mayor magnitud de corriente, más rápido se mueven las cargas (escala logarítmica).</span>
             <span>Los colores distinguen las ramas donde se divide la corriente.</span>
           </div>
         </div>

@@ -155,6 +155,7 @@ let diagramScale = 1;
 const flowCanvas = byId('flujo-corriente');
 const flowContext = flowCanvas.getContext('2d');
 const animateCurrent = byId('animar-corriente');
+const currentDirection = byId('sentido-corriente');
 const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
 let flowSegments = [];
 let animationFrame = 0;
@@ -323,22 +324,41 @@ function paintCurrent(time = 0) {
   flowContext.clearRect(0, 0, flowCanvas.width, flowCanvas.height);
   flowContext.restore();
   const moving = animateCurrent.checked && !reducedMotion.matches;
+  const electrons = currentDirection.value === 'electrones';
   const elapsedSeconds = Math.max(0, time - flowStartTime) / 1000;
-  for (const { x, y, dx, dy, length, speed, color } of flowSegments) {
+  flowContext.strokeStyle = '#fff';
+  flowContext.lineWidth = 1.25;
+  for (const { x, y, dx: conventionalDx, dy: conventionalDy, length, speed, color } of flowSegments) {
+    const startX = electrons ? x + conventionalDx * length : x;
+    const startY = electrons ? y + conventionalDy * length : y;
+    const dx = electrons ? -conventionalDx : conventionalDx;
+    const dy = electrons ? -conventionalDy : conventionalDy;
     flowContext.fillStyle = color;
     const middle = length / 2;
+    const arrowX = startX + dx * middle;
+    const arrowY = startY + dy * middle;
     // A fixed arrow remains visible when animation is off.
     flowContext.beginPath();
-    flowContext.moveTo(x + dx * (middle + 5), y + dy * (middle + 5));
-    flowContext.lineTo(x + dx * (middle - 5) - dy * 4, y + dy * (middle - 5) + dx * 4);
-    flowContext.lineTo(x + dx * (middle - 5) + dy * 4, y + dy * (middle - 5) - dx * 4);
+    flowContext.moveTo(arrowX + dx * 5, arrowY + dy * 5);
+    flowContext.lineTo(arrowX - dx * 5 - dy * 4, arrowY - dy * 5 + dx * 4);
+    flowContext.lineTo(arrowX - dx * 5 + dy * 4, arrowY - dy * 5 - dx * 4);
     flowContext.fill();
     if (!moving) continue;
-    const spacing = Math.min(length - 8, 34);
-    for (let position = 4 + (elapsedSeconds * speed) % spacing; position < length - 4; position += spacing) {
+    const spacing = Math.min(length - 10, 34);
+    for (let position = 5 + (elapsedSeconds * speed) % spacing; position < length - 5; position += spacing) {
+      const chargeX = startX + dx * position;
+      const chargeY = startY + dy * position;
       flowContext.beginPath();
-      flowContext.arc(x + dx * position, y + dy * position, 2.5, 0, Math.PI * 2);
+      flowContext.arc(chargeX, chargeY, 5, 0, Math.PI * 2);
       flowContext.fill();
+      flowContext.beginPath();
+      flowContext.moveTo(chargeX - 2.5, chargeY);
+      flowContext.lineTo(chargeX + 2.5, chargeY);
+      if (!electrons) {
+        flowContext.moveTo(chargeX, chargeY - 2.5);
+        flowContext.lineTo(chargeX, chargeY + 2.5);
+      }
+      flowContext.stroke();
     }
   }
   if (moving && flowSegments.length) animationFrame = requestAnimationFrame(paintCurrent);
@@ -553,6 +573,13 @@ new ResizeObserver(() => {
   }
 }).observe(viewport);
 
+function updateCurrentDirection() {
+  const direction = currentDirection.value === 'electrones' ? 'flujo de electrones' : 'corriente convencional';
+  canvas.setAttribute('aria-label', 'Diagrama de conexiones con flechas de ' + direction);
+  restartCurrent();
+}
+
+currentDirection.addEventListener('change', updateCurrentDirection);
 animateCurrent.addEventListener('change', restartCurrent);
 reducedMotion.addEventListener('change', restartCurrent);
 source.required = true;
