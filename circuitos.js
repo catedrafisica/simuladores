@@ -454,7 +454,7 @@ function drawCircuit(result) {
     ctx.restore();
   }
 
-  const tolerance = (result?.current ?? 0) * Number.EPSILON * 16;
+  const tolerance = Math.abs(result?.current ?? 0) * Number.EPSILON * 16;
   function markFlow(x1, y1, x2, y2, current, color = commonFlowColor) {
     const length = Math.hypot(x2 - x1, y2 - y1);
     if (Math.abs(current) <= tolerance || length < 16) return;
@@ -546,8 +546,11 @@ function drawCircuit(result) {
   const showInternalResistance = internalResistance.validity.valid && internalResistance.valueAsNumber > 0;
   const battery = x(positive) + (showInternalResistance ? 28 : 57);
   line([x(positive), bottom], [battery, bottom]);
-  line([battery, bottom - 14], [battery, bottom + 14]);
-  line([battery + 9, bottom - 8], [battery + 9, bottom + 8]);
+  const reversedPolarity = source.validity.valid && source.valueAsNumber < 0;
+  const leftPlate = reversedPolarity ? 8 : 14;
+  const rightPlate = reversedPolarity ? 14 : 8;
+  line([battery, bottom - leftPlate], [battery, bottom + leftPlate]);
+  line([battery + 9, bottom - rightPlate], [battery + 9, bottom + rightPlate]);
   if (showInternalResistance) {
     const left = battery + 17;
     const right = left + 22;
@@ -582,7 +585,7 @@ function refresh() {
   byId('potencia').textContent = result?.power != null ? display(result.power) + ' W' : '—';
   const status = byId('estado');
   let message = 'Circuito cerrado.';
-  if (!source.validity.valid) message = 'Ingresá una tensión entre 0 y 1.000 V.';
+  if (!source.validity.valid) message = 'Ingresá una tensión entre −1.000 y 1.000 V.';
   else if (invalidInternal) message = 'Ingresá una resistencia interna de 0 Ω o entre 0,001 Ω y 1.000.000.000 Ω.';
   else if (invalidResistance) message = 'Ingresá 0 Ω o un valor entre 0,001 Ω y 1.000.000.000 Ω.';
   else if (result.shortCircuit) {
@@ -592,8 +595,8 @@ function refresh() {
       if (result.readings.some(({ current }) => current === null)) {
         message += ' La corriente en los lazos de 0 Ω queda indeterminada.';
       }
-    } else message += source.valueAsNumber > 0
-      ? 'La corriente crecería sin límite al acercarse a 0 Ω con una fuente ideal.'
+    } else message += source.valueAsNumber !== 0
+      ? 'La magnitud de la corriente crecería sin límite al acercarse a 0 Ω con una fuente ideal.'
       : 'Con una fuente ideal de 0 V, la corriente queda indeterminada.';
   } else {
     if (!result.closed) message = 'Circuito abierto. No hay un camino entre los bornes de la fuente.';
