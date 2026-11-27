@@ -1,0 +1,185 @@
+<!doctype html>
+<!-- © 2026 Augusto Rodrigo Alterats. Uso educativo con cita de autoría. -->
+<html lang="es-AR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Circuitos resistivos de CC | Física Aplicada</title>
+  <link rel="icon" href="icoQubit.svg" type="image/svg+xml">
+  <meta name="description" content="Simulador interactivo de circuitos resistivos de corriente continua en serie, en paralelo y mixtos.">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="fuerzas.css">
+  <link rel="stylesheet" href="responsive.css">
+  <link rel="stylesheet" href="circuitos.css">
+</head>
+<body>
+<canvas id="particulas" aria-hidden="true"></canvas>
+<nav class="navbar navbar-expand-xl bg-white border-bottom barra-sitio" aria-label="Navegación principal">
+  <div class="container">
+    <a class="navbar-brand d-flex align-items-center gap-2 fw-bold" href="index.html"><img src="logoQubit.svg" alt=""><span>Facultad de Ciencias Agrarias - UNNE</span></a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#menuPrincipal" aria-controls="menuPrincipal" aria-expanded="false" aria-label="Abrir o cerrar navegación">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="menuPrincipal">
+      <div class="navbar-nav ms-auto gap-1">
+      <a class="nav-link" href="index.html">Inicio</a>
+      <div class="nav-item dropdown">
+        <button class="nav-link dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">Parte I</button>
+        <ul class="dropdown-menu menu-parte">
+          <li><h6 class="dropdown-header titulo-parte">MECÁNICA</h6></li>
+          <li><hr class="dropdown-divider"></li>
+          <li><h6 class="dropdown-header">UNIDAD 1 - MEDICIONES</h6></li>
+          <li><a class="dropdown-item" href="vernier.html">Calibre Vernier</a></li>
+          <li><a class="dropdown-item" href="micrometro.html">Micrómetro</a></li>
+          <li><a class="dropdown-item" href="pipeta.html">Pipeta graduada</a></li>
+          <li><a class="dropdown-item" href="probeta.html">Probeta graduada</a></li>
+          <li><hr class="dropdown-divider"></li>
+          <li><h6 class="dropdown-header">UNIDAD 2 - ESTÁTICA</h6></li>
+          <li><a class="dropdown-item" href="fuerzas.html">Fuerzas en el plano XY</a></li>
+          <li><a class="dropdown-item" href="torque.html">Torque o momento de una fuerza</a></li>
+          <li><hr class="dropdown-divider"></li>
+          <li><h6 class="dropdown-header">UNIDAD 3 - CINEMÁTICA</h6></li>
+          <li><button class="dropdown-item" type="button" disabled>Próximamente</button></li>
+          <li><hr class="dropdown-divider"></li>
+          <li><h6 class="dropdown-header">UNIDAD 4 - DINÁMICA</h6></li>
+          <li><button class="dropdown-item" type="button" disabled>Próximamente</button></li>
+          <li><hr class="dropdown-divider"></li>
+          <li><h6 class="dropdown-header">UNIDAD 5 - TRABAJO Y ENERGÍA</h6></li>
+          <li><button class="dropdown-item" type="button" disabled>Próximamente</button></li>
+        </ul>
+      </div>
+      <div class="nav-item dropdown">
+        <button class="nav-link dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">Parte II</button>
+        <ul class="dropdown-menu menu-parte">
+          <li><h6 class="dropdown-header titulo-parte">ESTÁTICA Y DINÁMICA DE LOS FLUIDOS</h6></li>
+          <li><hr class="dropdown-divider"></li>
+          <li><h6 class="dropdown-header">UNIDAD 6 - HIDROSTÁTICA</h6></li>
+          <li><button class="dropdown-item" type="button" disabled>Próximamente</button></li>
+          <li><hr class="dropdown-divider"></li>
+          <li><h6 class="dropdown-header">UNIDAD 7 - HIDRODINÁMICA</h6></li>
+          <li><button class="dropdown-item" type="button" disabled>Próximamente</button></li>
+          <li><hr class="dropdown-divider"></li>
+          <li><h6 class="dropdown-header">UNIDAD 8 - FENÓMENOS DE TRANSPORTE</h6></li>
+          <li><button class="dropdown-item" type="button" disabled>Próximamente</button></li>
+          <li><hr class="dropdown-divider"></li>
+          <li><h6 class="dropdown-header">UNIDAD 9 - FENÓMENOS DE SUPERFICIE</h6></li>
+          <li><button class="dropdown-item" type="button" disabled>Próximamente</button></li>
+        </ul>
+      </div>
+      <div class="nav-item dropdown">
+        <button class="nav-link dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">Parte III</button>
+        <ul class="dropdown-menu menu-parte">
+          <li><h6 class="dropdown-header titulo-parte">CALOR Y TERMODINÁMICA</h6></li>
+          <li><hr class="dropdown-divider"></li>
+          <li><h6 class="dropdown-header">UNIDAD 10 - CALOR Y TEMPERATURA</h6></li>
+          <li><button class="dropdown-item" type="button" disabled>Próximamente</button></li>
+          <li><hr class="dropdown-divider"></li>
+          <li><h6 class="dropdown-header">UNIDAD 11 - TRABAJO EN TERMODINÁMICA</h6></li>
+          <li><button class="dropdown-item" type="button" disabled>Próximamente</button></li>
+        </ul>
+      </div>
+      <div class="nav-item dropdown">
+        <button class="nav-link dropdown-toggle active" type="button" data-bs-toggle="dropdown" aria-expanded="false">Parte IV</button>
+        <ul class="dropdown-menu menu-parte">
+          <li><h6 class="dropdown-header titulo-parte">ELECTRICIDAD Y MAGNETISMO</h6></li>
+          <li><hr class="dropdown-divider"></li>
+          <li><h6 class="dropdown-header">UNIDAD 12 - CAMPO ELÉCTRICO</h6></li>
+          <li><button class="dropdown-item" type="button" disabled>Próximamente</button></li>
+          <li><hr class="dropdown-divider"></li>
+          <li><h6 class="dropdown-header">UNIDAD 13 - CIRCUITOS DE CORRIENTE CONTINUA</h6></li>
+          <li><span class="dropdown-item active" aria-current="page">Circuitos resistivos de CC</span></li>
+          <li><hr class="dropdown-divider"></li>
+          <li><h6 class="dropdown-header">UNIDAD 14 - CAMPO MAGNÉTICO Y FEM INDUCIDA</h6></li>
+          <li><button class="dropdown-item" type="button" disabled>Próximamente</button></li>
+          <li><hr class="dropdown-divider"></li>
+          <li><h6 class="dropdown-header">UNIDAD 15 - ONDAS Y ESPECTRO ELECTROMAGNÉTICO</h6></li>
+          <li><button class="dropdown-item" type="button" disabled>Próximamente</button></li>
+        </ul>
+      </div>
+    </div>
+  </div>
+    </div>
+  </nav>
+<div class="pantalla-carga" id="pantallaCarga" role="status" aria-live="polite">
+  <img class="gif-qubit" src="qubit.gif" alt="Qubit">
+  <span class="spinner" aria-hidden="true"></span>
+  <span>Cargando simulador de circuitos...</span>
+</div>
+  <main class="simulador-circuitos" inert>
+    <header class="encabezado">
+      <img class="instrumento-icono" src="logoQubit.svg" alt="">
+      <h1>Simulador de circuitos resistivos de CC - Física Aplicada</h1>
+    </header>
+    <p>Armá un circuito con una fuente ideal y resistencias. Los extremos que llevan el mismo nombre están conectados entre sí.</p>
+    <div class="layout">
+      <section class="panel controles" aria-labelledby="armado">
+        <h2 id="armado">Armado del circuito</h2>
+        <div class="ejemplos" aria-label="Cargar un circuito de ejemplo">
+          <button type="button" data-example="serie">Serie</button>
+          <button type="button" data-example="paralelo">Paralelo</button>
+          <button type="button" data-example="mixto">Mixto</button>
+        </div>
+        <p class="ayuda">Cada ejemplo reemplaza el armado actual.</p>
+        <label class="fuente">Tensión de la fuente (V)
+          <input id="fuente" type="number" min="0" max="1000" step="any" value="12">
+        </label>
+        <p class="ayuda">Agregá nodos para crear uniones intermedias y elegí los dos extremos de cada resistencia.</p>
+        <div class="acciones">
+          <button type="button" id="agregar-nodo">Agregar nodo</button>
+          <button type="button" id="agregar-resistencia">Agregar resistencia</button>
+        </div>
+        <div id="nodos" class="nodos" aria-label="Nodos intermedios"></div>
+        <div class="desplazable">
+          <table>
+            <thead><tr><th>Componente</th><th>Desde</th><th>Hasta</th><th>Valor (Ω)</th><th><span class="visually-hidden">Acciones</span></th></tr></thead>
+            <tbody id="resistencias"></tbody>
+          </table>
+        </div>
+      </section>
+      <section class="panel esquema" aria-labelledby="titulo-esquema">
+        <div class="vista-grafico">
+          <div class="cabecera"><h2 id="titulo-esquema">Esquema del circuito</h2></div>
+          <div class="lienzo" tabindex="0" aria-label="Área desplazable del esquema">
+            <div class="capas-circuito">
+              <canvas id="diagrama" role="img" aria-label="Diagrama de conexiones con flechas de corriente convencional"></canvas>
+              <canvas id="flujo-corriente" aria-hidden="true"></canvas>
+            </div>
+          </div>
+          <div class="leyenda-corriente">
+            <label class="check"><input id="animar-corriente" type="checkbox" checked> Animar corriente</label>
+            <span>Las flechas indican el sentido convencional. La velocidad de los puntos es ilustrativa.</span>
+          </div>
+        </div>
+        <dl class="resumen mediciones">
+          <div class="dato"><dt>Resistencia equivalente</dt><dd id="equivalente">—</dd></div>
+          <div class="dato"><dt>Corriente de la fuente</dt><dd id="corriente">—</dd></div>
+          <div class="dato"><dt>Potencia total</dt><dd id="potencia">—</dd></div>
+        </dl>
+        <p id="estado" role="status"></p>
+      </section>
+    </div>
+    <section class="panel resultados" aria-labelledby="titulo-lecturas">
+      <h2 id="titulo-lecturas">Mediciones por resistencia</h2>
+      <p class="ayuda">La tensión es la diferencia entre los extremos «Desde» y «Hasta». Una corriente negativa indica que circula de «Hasta» hacia «Desde».</p>
+      <div class="desplazable">
+        <table>
+          <thead><tr><th>Componente</th><th>Tensión (V)</th><th>Corriente (A)</th><th>Potencia (W)</th></tr></thead>
+          <tbody id="lecturas"></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+<footer>
+  <hr class="separador-version">
+  <p><span class="icono-version">✳️</span> Versión <span data-app-version></span></p>
+  <p>© Copyright <strong>2026 Qubit Física</strong>. Todos los derechos reservados.</p>
+  <p>Diseñado por <a href="https://github.com/qubitfisica">augusalterats</a> | <a href="https://qubitfisica.com.ar/LICENSE.md">Licencia MIT</a></p>
+</footer>
+<script src="circuitos.js"></script>
+<script src="pantalla-completa.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="particulas.js"></script>
+<script src="version.js"></script>
+<script>window.addEventListener('load', () => setTimeout(() => { document.querySelector('#pantallaCarga').classList.add('oculta'); document.querySelector('main').removeAttribute('inert'); }, 1000));</script>
+</body>
+</html>

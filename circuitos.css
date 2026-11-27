@@ -1,0 +1,74 @@
+/* Ajustes del editor y del esquema de circuitos. */
+.simulador-circuitos .layout {
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+  align-items: start;
+}
+
+.simulador-circuitos .acciones,
+.simulador-circuitos .nodos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.simulador-circuitos .nodos { margin-top: 12px; }
+.simulador-circuitos button:disabled { opacity: .55; cursor: default; }
+
+.simulador-circuitos .fuente {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.simulador-circuitos .fuente input { width: 7rem; }
+.simulador-circuitos td input { width: 5.5rem; }
+
+.simulador-circuitos td select {
+  width: auto;
+  margin: 0;
+}
+
+.simulador-circuitos input:invalid { border-color: #ad4038; }
+.desplazable, .lienzo { overflow: auto; }
+
+.lienzo {
+  display: grid;
+  justify-items: safe center;
+  border: 1px solid #c9d2e4;
+  border-radius: 10px;
+  background: #f8f9fc;
+}
+
+.lienzo canvas { display: block; }
+.vista-grafico.ampliada .lienzo { flex: 1; min-height: 0; }
+
+.simulador-circuitos table { text-align: left; font-variant-numeric: tabular-nums; }
+.simulador-circuitos th, .simulador-circuitos td { padding: 8px 5px; white-space: nowrap; }
+
+.mediciones { grid-template-columns: repeat(auto-fit, minmax(7rem, 1fr)); }
+.mediciones dt, #estado { font-size: .875rem; color: #536078; }
+.mediciones dd { margin: 4px 0 0; color: var(--azul); font-weight: bold; }
+.simulador-circuitos #estado { margin-bottom: 0; }
+
+@media (max-width: 850px) {
+  .simulador-circuitos .layout { grid-template-columns: minmax(0, 1fr); }
+}
+
+.capas-circuito { position: relative; }
+
+#flujo-corriente {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.leyenda-corriente {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 16px;
+  margin-top: 8px;
+  color: #536078;
+  font-size: .875rem;
+}
