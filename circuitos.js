@@ -230,30 +230,30 @@ function renderEditor() {
   refresh();
 }
 
-function getBranchColors(nodes, readings, tolerance) {
-  const incoming = new Map(nodes.map(node => [node, []]));
-  const outgoing = new Map(nodes.map(node => [node, []]));
-  readings.forEach(({ current }, index) => {
-    if (Math.abs(current) <= tolerance) return;
-    const { from, to } = resistors[index];
+function getBranchColors(connections, tolerance) {
+  const incoming = new Map();
+  const outgoing = new Map();
+  for (const connection of connections) {
+    const { from, to, current } = connection;
+    if (Math.abs(current) <= tolerance) continue;
     const start = current > 0 ? from : to;
     const end = current > 0 ? to : from;
-    const branch = { index, end };
-    outgoing.get(start).push(branch);
-    incoming.get(end).push(branch);
-  });
+    if (!outgoing.has(start)) outgoing.set(start, []);
+    outgoing.get(start).push({ connection, end });
+    incoming.set(end, (incoming.get(end) ?? 0) + 1);
+  }
 
   const colors = new Map();
   let colorIndex = 0;
   for (const branches of outgoing.values()) {
     if (branches.length < 2) continue;
     for (const firstBranch of branches) {
-      const color = branchFlowColors[colorIndex++];
+      const color = branchFlowColors[colorIndex++ % branchFlowColors.length];
       let branch = firstBranch;
-      while (branch && !colors.has(branch.index)) {
-        colors.set(branch.index, color);
+      while (branch && !colors.has(branch.connection)) {
+        colors.set(branch.connection, color);
         const next = outgoing.get(branch.end);
-        branch = incoming.get(branch.end).length === 1 && next.length === 1 ? next[0] : null;
+        branch = incoming.get(branch.end) === 1 && next?.length === 1 ? next[0] : null;
       }
     }
   }
@@ -327,7 +327,6 @@ function drawCircuit(result) {
   }
 
   const tolerance = (result?.current ?? 0) * Number.EPSILON * 16;
-  const branchColors = getBranchColors(nodes, result?.readings ?? [], tolerance);
   function markFlow(x1, y1, x2, y2, current, color = commonFlowColor) {
     const length = Math.hypot(x2 - x1, y2 - y1);
     if (Math.abs(current) <= tolerance || length < 16) return;
@@ -341,6 +340,21 @@ function drawCircuit(result) {
 
   const x = node => 40 + nodes.indexOf(node) * 120;
   const bottom = height - 47;
+  const junctionKey = (node, y) => node + ':' + y;
+  const resistorConnections = resistors.map(({ from, to }, index) => {
+    const y = 68 + index * 58;
+    return {
+      from: junctionKey(from, y),
+      to: junctionKey(to, y),
+      current: result?.readings[index].current ?? 0
+    };
+  });
+  const railConnections = [];
+  function addRailConnection(node, start, end, current) {
+    railConnections.push({ from: junctionKey(node, start), to: junctionKey(node, end),
+      current, x: x(node), start, end });
+  }
+
   for (const node of nodes) {
     ctx.fillText(node, x(node), 23);
     const end = node === positive || node === negative ? bottom : bottom - 20;
@@ -351,14 +365,20 @@ function drawCircuit(result) {
     resistors.forEach(({ from, to }, index) => {
       if (node !== from && node !== to) return;
       const y = 68 + index * 58;
-      markFlow(x(node), start, x(node), y, down);
-      const current = result?.readings[index].current ?? 0;
+      addRailConnection(node, start, y, down);
+      const { current } = resistorConnections[index];
       down -= node === from ? current : -current;
       start = y;
     });
     if (node === positive || node === negative) {
-      markFlow(x(node), start, x(node), end, node === positive ? -(result?.current ?? 0) : (result?.current ?? 0));
+      addRailConnection(node, start, end, node === positive ? -(result?.current ?? 0) : (result?.current ?? 0));
     }
+  }
+
+  const branchColors = getBranchColors([...resistorConnections, ...railConnections], tolerance);
+  for (const connection of railConnections) {
+    const { x, start, end, current } = connection;
+    markFlow(x, start, x, end, current, branchColors.get(connection));
   }
 
   function junction(position, y) {
@@ -371,8 +391,9 @@ function drawCircuit(result) {
     const y = 68 + index * 58;
     const left = Math.min(x(from), x(to));
     const right = Math.max(x(from), x(to));
-    const current = (result?.readings[index].current ?? 0) * (x(from) < x(to) ? 1 : -1);
-    const color = branchColors.get(index);
+    const connection = resistorConnections[index];
+    const current = connection.current * (x(from) < x(to) ? 1 : -1);
+    const color = branchColors.get(connection);
     line([left, y], [left + 34, y]);
     markFlow(left, y, left + 34, y, current, color);
     markFlow(left + 34, y, left + 86, y, current, color);
