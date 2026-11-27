@@ -2,9 +2,10 @@
 
 const positive = '+';
 const negative = '−';
-const maximumNodes = 8;
+const nodeNames = [...'ABCDEFGH'];
 const maximumResistors = 16;
 const examples = {
+  inicial: [[positive, negative, 100]],
   serie: [[positive, 'A', 100], ['A', negative, 200]],
   paralelo: [[positive, negative, 100], [positive, negative, 200]],
   mixto: [[positive, 'A', 100], ['A', negative, 200], ['A', negative, 300]]
@@ -107,6 +108,34 @@ function allNodes() {
   return [positive, ...intermediate, negative];
 }
 
+function seriesEnd(components) {
+  const remaining = new Set(components);
+  const visited = new Set([positive]);
+  let node = positive;
+  while (remaining.size) {
+    const connected = [...remaining].filter(({ from, to }) => from === node || to === node);
+    if (connected.length !== 1) return null;
+    const edge = connected[0];
+    remaining.delete(edge);
+    node = edge.from === node ? edge.to : edge.from;
+    if (node === negative) return remaining.size === 0 ? edge : null;
+    if (visited.has(node)) return null;
+    visited.add(node);
+  }
+  return null;
+}
+
+function availableSeriesNode() {
+  return nodeNames.find(node => !resistors.some(({ from, to }) => from === node || to === node));
+}
+
+function updateAddButton() {
+  const control = byId('agregar-resistencia');
+  const seriesLimit = Boolean(seriesEnd(resistors)) && !availableSeriesNode();
+  control.disabled = resistors.length >= maximumResistors || seriesLimit;
+  control.title = seriesLimit ? 'Se alcanzó el límite de nodos para prolongar la serie' : '';
+}
+
 function display(value) {
   if (value === Infinity) return '∞';
   const absolute = Math.abs(value);
@@ -165,6 +194,7 @@ function renderEditor() {
         }
         resistor[key] = select.value;
         renderNodes();
+        updateAddButton();
         refresh();
       });
       row.insertCell().append(select);
@@ -190,8 +220,8 @@ function renderEditor() {
     }));
   }
 
-  byId('agregar-nodo').disabled = intermediate.length >= maximumNodes;
-  byId('agregar-resistencia').disabled = resistors.length >= maximumResistors;
+  byId('agregar-nodo').disabled = intermediate.length >= nodeNames.length;
+  updateAddButton();
   refresh();
 }
 
@@ -385,15 +415,27 @@ for (const control of document.querySelectorAll('[data-example]')) {
   control.addEventListener('click', () => loadExample(control.dataset.example));
 }
 byId('agregar-nodo').addEventListener('click', () => {
-  const name = [...'ABCDEFGH'].find(node => !intermediate.includes(node));
+  const name = nodeNames.find(node => !intermediate.includes(node));
   intermediate.push(name);
   intermediate.sort();
   renderEditor();
   if (byId('agregar-nodo').disabled) byId('agregar-resistencia').focus();
 });
 byId('agregar-resistencia').addEventListener('click', () => {
-  resistors.push({ id: nextResistor++, from: positive, to: negative, value: 100 });
+  const end = seriesEnd(resistors);
+  let from = positive;
+  if (end) {
+    from = availableSeriesNode();
+    if (!from) return;
+    if (!intermediate.includes(from)) {
+      intermediate.push(from);
+      intermediate.sort();
+    }
+    if (end.from === negative) end.from = from;
+    else end.to = from;
+  }
+  resistors.push({ id: nextResistor++, from, to: negative, value: 100 });
   renderEditor();
   resistorRows.lastElementChild.querySelector('select').focus();
 });
-loadExample('mixto');
+loadExample('inicial');
