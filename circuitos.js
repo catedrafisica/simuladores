@@ -16,6 +16,61 @@ const examples = {
 };
 
 function solveCircuit(nodes, resistors, voltage) {
+  const wires = resistors.filter(({ resistance }) => resistance === 0);
+  if (!wires.length) return solveResistiveCircuit(nodes, resistors, voltage);
+
+  function connectedByWires(start, excluded) {
+    const connected = new Set([start]);
+    for (const node of connected) {
+      for (const wire of wires) {
+        if (wire === excluded) continue;
+        if (wire.from === node) connected.add(wire.to);
+        if (wire.to === node) connected.add(wire.from);
+      }
+    }
+    return connected;
+  }
+
+  const terminals = connectedByWires(positive);
+  if (terminals.has(negative)) {
+    return { shortCircuit: true, closed: true, equivalent: 0, current: null, power: null,
+      readings: resistors.map(({ resistance }) => resistance === 0
+        ? { voltage: 0, current: null, power: 0 }
+        : { voltage: null, current: null, power: null }) };
+  }
+
+  const representatives = new Map();
+  for (const node of [positive, negative, ...nodes]) {
+    if (representatives.has(node)) continue;
+    for (const member of connectedByWires(node)) representatives.set(member, node);
+  }
+  const loads = resistors.filter(({ resistance }) => resistance !== 0);
+  const result = solveResistiveCircuit([...new Set(representatives.values())],
+    loads.map(({ from, to, resistance }) => ({
+      from: representatives.get(from), to: representatives.get(to), resistance
+    })), voltage);
+
+  const outgoing = new Map(nodes.map(node => [node, 0]));
+  outgoing.set(positive, -result.current);
+  outgoing.set(negative, result.current);
+  const loadReadings = new Map(loads.map((load, index) => {
+    const reading = result.readings[index];
+    outgoing.set(load.from, outgoing.get(load.from) + reading.current);
+    outgoing.set(load.to, outgoing.get(load.to) - reading.current);
+    return [load, reading];
+  }));
+  result.readings = resistors.map(resistor => {
+    if (loadReadings.has(resistor)) return loadReadings.get(resistor);
+    const side = connectedByWires(resistor.from, resistor);
+    // A wire in a loop has no unique current. Otherwise apply Kirchhoff's current law.
+    const current = side.has(resistor.to) ? null
+      : -[...side].reduce((sum, node) => sum + outgoing.get(node), 0);
+    return { voltage: 0, current, power: 0 };
+  });
+  return result;
+}
+
+function solveResistiveCircuit(nodes, resistors, voltage) {
   const adjacent = new Map(nodes.map(node => [node, []]));
   for (const { from, to } of resistors) {
     adjacent.get(from).push(to);
@@ -41,6 +96,7 @@ function solveCircuit(nodes, resistors, voltage) {
 
   // Solve for normalized potentials, where the positive terminal is at 1 V.
   for (const { from, to, resistance } of resistors) {
+    if (from === to) continue;
     const conductance = 1 / resistance;
     for (const [node, neighbor] of [[from, to], [to, from]]) {
       const row = matrix[indices.get(node)];
@@ -142,6 +198,7 @@ function updateAddButton() {
 }
 
 function display(value) {
+  if (value === null) return '—';
   if (value === Infinity) return '∞';
   const absolute = Math.abs(value);
   if (absolute > 0 && (absolute < 0.0001 || absolute >= 1e7)) return scientific.format(value);
@@ -207,7 +264,7 @@ function renderEditor() {
 
     const value = element('input');
     value.type = 'number';
-    value.min = '0.001';
+    value.min = '0';
     value.max = '1000000000';
     value.step = 'any';
     value.required = true;
@@ -309,6 +366,7 @@ function getDiagramScale(width, height) {
 }
 
 function drawCircuit(result) {
+  if (result?.readings.some(({ current }) => current === null)) result = null;
   const nodes = allNodes();
   const { width, height } = getDiagramDimensions();
   diagramScale = getDiagramScale(width, height);
@@ -398,7 +456,7 @@ function drawCircuit(result) {
     ctx.fill();
   }
 
-  resistors.forEach(({ id, from, to }, index) => {
+  resistors.forEach(({ id, from, to, value }, index) => {
     const y = 68 + index * 58;
     const left = Math.min(x(from), x(to));
     const right = Math.max(x(from), x(to));
@@ -408,8 +466,10 @@ function drawCircuit(result) {
     line([left, y], [left + 34, y]);
     markFlow(left, y, left + 34, y, current, color);
     markFlow(left + 34, y, left + 86, y, current, color);
-    ctx.strokeRect(left + 34, y - 9, 52, 18);
-    ctx.fillText('R' + id, left + 60, y - 15);
+    const isWire = value !== '' && Number(value) === 0;
+    if (isWire) line([left + 34, y], [left + 86, y]);
+    else ctx.strokeRect(left + 34, y - 9, 52, 18);
+    ctx.fillText('R' + id + (isWire ? ' (0 Ω)' : ''), left + 60, y - 15);
     // Gaps at crossed rails show that the resistor is connected only at its ends.
     let start = left + 86;
     for (let crossing = left + 120; crossing < right; crossing += 120) {
@@ -436,20 +496,32 @@ function drawCircuit(result) {
 }
 
 function refresh() {
-  const invalidResistance = [...resistorRows.querySelectorAll('input')].some(input => !input.validity.valid);
+  const invalidResistance = [...resistorRows.querySelectorAll('input')].some(input =>
+    !input.validity.valid || (input.valueAsNumber > 0 && input.valueAsNumber < 0.001));
   const result = source.validity.valid && !invalidResistance
     ? solveCircuit(allNodes(), resistors.map(resistor => ({ ...resistor, resistance: Number(resistor.value) })), source.valueAsNumber)
     : null;
   lastResult = result;
   drawCircuit(result);
   byId('equivalente').textContent = result ? display(result.equivalent) + ' Ω' : '—';
-  byId('corriente').textContent = result ? display(result.current) + ' A' : '—';
-  byId('potencia').textContent = result ? display(result.power) + ' W' : '—';
+  byId('corriente').textContent = result?.current != null ? display(result.current) + ' A' : '—';
+  byId('potencia').textContent = result?.power != null ? display(result.power) + ' W' : '—';
   const status = byId('estado');
   let message = 'Circuito cerrado.';
   if (!source.validity.valid) message = 'Ingresá una tensión entre 0 y 1.000 V.';
-  else if (invalidResistance) message = 'Cada resistencia debe estar entre 0,001 Ω y 1.000.000.000 Ω.';
-  else if (!result.closed) message = 'Circuito abierto. No hay un camino entre los bornes de la fuente.';
+  else if (invalidResistance) message = 'Ingresá 0 Ω o un valor entre 0,001 Ω y 1.000.000.000 Ω.';
+  else if (result.shortCircuit) {
+    message = 'Cortocircuito: los bornes de la fuente están unidos por un camino de 0 Ω. ';
+    message += source.valueAsNumber > 0
+      ? 'La corriente crecería sin límite al acercarse a 0 Ω con una fuente ideal.'
+      : 'Con una fuente ideal de 0 V, la corriente queda indeterminada.';
+  } else {
+    if (!result.closed) message = 'Circuito abierto. No hay un camino entre los bornes de la fuente.';
+    if (result.readings.some(({ current }) => current === null)) {
+      message += ' La corriente en los lazos de 0 Ω queda indeterminada.';
+    }
+  }
+  status.classList.toggle('cortocircuito', Boolean(result?.shortCircuit));
   if (status.textContent !== message) status.textContent = message;
 
   const readings = byId('lecturas');

@@ -65,6 +65,7 @@ body.grafico-ampliado .simulador-circuitos { z-index: 12; }
 .mediciones dt, #estado { font-size: .875rem; color: #536078; }
 .mediciones dd { margin: 4px 0 0; color: var(--azul); font-weight: bold; }
 .simulador-circuitos #estado { margin-bottom: 0; }
+.simulador-circuitos #estado.cortocircuito { color: #a12622; font-weight: bold; }
 
 @media (max-width: 850px) {
   .simulador-circuitos .layout { grid-template-columns: minmax(0, 1fr); }
