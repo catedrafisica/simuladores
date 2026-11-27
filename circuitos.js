@@ -95,7 +95,7 @@ const ctx = canvas.getContext('2d');
 const viewport = canvas.closest('.lienzo');
 const diagramView = viewport.closest('.vista-grafico');
 let lastResult = null;
-let fullscreenScale = 1;
+let diagramScale = 1;
 const flowCanvas = byId('flujo-corriente');
 const flowContext = flowCanvas.getContext('2d');
 const animateCurrent = byId('animar-corriente');
@@ -293,19 +293,30 @@ function restartCurrent() {
   paintCurrent(flowStartTime);
 }
 
+function getDiagramDimensions() {
+  return {
+    width: 80 + (allNodes().length - 1) * 120,
+    height: 115 + Math.max(resistors.length, 1) * 58
+  };
+}
+
+function getDiagramScale(width, height) {
+  const availableWidth = viewport.clientWidth;
+  if (diagramView.classList.contains('ampliada') && availableWidth && viewport.clientHeight) {
+    return Math.min(availableWidth / width, viewport.clientHeight / height);
+  }
+  return Math.max(1, Math.min(1.65, availableWidth / width));
+}
+
 function drawCircuit(result) {
   const nodes = allNodes();
-  const width = 80 + (nodes.length - 1) * 120;
-  const height = 115 + Math.max(resistors.length, 1) * 58;
-  const maximized = diagramView.classList.contains('ampliada');
-  fullscreenScale = maximized && viewport.clientWidth > 0 && viewport.clientHeight > 0
-    ? Math.min(viewport.clientWidth / width, viewport.clientHeight / height)
-    : 1;
-  const ratio = (window.devicePixelRatio || 1) * fullscreenScale;
+  const { width, height } = getDiagramDimensions();
+  diagramScale = getDiagramScale(width, height);
+  const ratio = (window.devicePixelRatio || 1) * diagramScale;
   canvas.width = Math.round(width * ratio);
   canvas.height = Math.round(height * ratio);
-  canvas.style.width = width * fullscreenScale + 'px';
-  canvas.style.height = height * fullscreenScale + 'px';
+  canvas.style.width = width * diagramScale + 'px';
+  canvas.style.height = height * diagramScale + 'px';
   ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
   flowCanvas.width = canvas.width;
   flowCanvas.height = canvas.height;
@@ -464,7 +475,8 @@ function loadExample(example) {
 }
 
 new ResizeObserver(() => {
-  if (diagramView.classList.contains('ampliada') || fullscreenScale !== 1) {
+  const { width, height } = getDiagramDimensions();
+  if (getDiagramScale(width, height) !== diagramScale) {
     drawCircuit(lastResult);
   }
 }).observe(viewport);

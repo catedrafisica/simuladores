@@ -1,6 +1,6 @@
 /* Ajustes del editor y del esquema de circuitos. */
 .simulador-circuitos .layout {
-  grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+  grid-template-columns: minmax(0, 2fr) minmax(0, 3fr);
   align-items: start;
 }
 
@@ -11,7 +11,10 @@
   gap: 8px;
 }
 
-.simulador-circuitos .nodos { margin-top: 12px; }
+.simulador-circuitos .controles { padding: 12px; }
+.simulador-circuitos .controles .ayuda { margin-bottom: 10px; }
+.simulador-circuitos .controles button { min-height: 34px; padding: 5px 10px; }
+.simulador-circuitos .nodos:not(:empty) { margin-top: 8px; }
 .simulador-circuitos button:disabled { opacity: .55; cursor: default; }
 
 .simulador-circuitos .fuente {
@@ -21,8 +24,10 @@
   align-items: center;
 }
 
-.simulador-circuitos .fuente input { width: 7rem; }
-.simulador-circuitos td input { width: 5.5rem; }
+.simulador-circuitos .fuente input { width: 5rem; }
+.simulador-circuitos .controles td input { width: 4.5rem; }
+.simulador-circuitos .controles input,
+.simulador-circuitos .controles select { padding: 4px 5px; }
 
 .simulador-circuitos td select {
   width: auto;
@@ -53,6 +58,8 @@ body.grafico-ampliado .simulador-circuitos { z-index: 12; }
 
 .simulador-circuitos table { text-align: left; font-variant-numeric: tabular-nums; }
 .simulador-circuitos th, .simulador-circuitos td { padding: 8px 5px; white-space: nowrap; }
+.simulador-circuitos .controles th,
+.simulador-circuitos .controles td { padding: 4px 3px; font-size: .875rem; }
 
 .mediciones { grid-template-columns: repeat(auto-fit, minmax(7rem, 1fr)); }
 .mediciones dt, #estado { font-size: .875rem; color: #536078; }
