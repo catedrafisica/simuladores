@@ -267,7 +267,8 @@ function renderEditor() {
   resistorRows.replaceChildren();
   for (const resistor of resistors) {
     const row = resistorRows.insertRow();
-    const label = element('th', 'R' + resistor.id);
+    const label = element('th', 'R');
+    label.append(element('sub', resistor.id));
     label.scope = 'row';
     row.append(label);
 
@@ -533,12 +534,16 @@ function drawCircuit(result) {
     const right = Math.max(x(from), x(to));
     const connection = resistorConnections[index];
     const current = connection.current * (x(from) < x(to) ? 1 : -1);
-    const color = branchColors.get(connection);
+    const color = branchColors.get(connection) ?? commonFlowColor;
     line([left, y], [left + 34, y]);
     const isWire = value !== '' && Number(value) === 0;
     if (isWire) line([left + 34, y], [left + 86, y]);
     else drawResistor(left + 34, left + 86, y);
-    ctx.fillText('R' + id + (isWire ? ' (0 Ω)' : ''), left + 60, y - 15);
+    const subscript = String(id).replace(/\d/g, digit => '₀₁₂₃₄₅₆₇₈₉'[digit]);
+    ctx.save();
+    if (Math.abs(current) > tolerance) ctx.fillStyle = color;
+    ctx.fillText('R' + subscript + (isWire ? ' (0 Ω)' : ''), left + 60, y - 15);
+    ctx.restore();
     // Bridges keep the branch continuous at crossings without a junction.
     let start = left + 86;
     let flowStart = left;
@@ -623,7 +628,8 @@ function refresh() {
   readings.replaceChildren();
   resistors.forEach(({ id }, index) => {
     const row = readings.insertRow();
-    const header = element('th', 'R' + id);
+    const header = element('th', 'R');
+    header.append(element('sub', id));
     header.scope = 'row';
     row.append(header);
     for (const quantity of ['voltage', 'current', 'power']) {

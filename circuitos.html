@@ -120,12 +120,12 @@
           <button type="button" data-example="mixto">Mixto</button>
         </div>
         <p class="ayuda">Cada ejemplo reemplaza el armado actual.</p>
-        <label class="fuente">Tensión de la fuente (V)
+        <div class="fuente">
+          <label for="fuente">Tensión de la fuente (V)</label>
           <input id="fuente" type="number" min="-1000" max="1000" step="any" value="12">
-        </label>
-        <label class="fuente">Resistencia interna (Ω)
+          <label for="resistencia-interna">Resistencia interna (Ω)</label>
           <input id="resistencia-interna" type="number" min="0" max="1000000000" step="any" value="0" required>
-        </label>
+        </div>
         <p class="ayuda">Agregá nodos para crear uniones intermedias y elegí los dos extremos de cada resistencia.</p>
         <div class="acciones">
           <button type="button" id="agregar-nodo">Agregar nodo</button>
