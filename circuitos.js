@@ -179,6 +179,9 @@ const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
 let flowSegments = [];
 let animationFrame = 0;
 let flowStartTime = 0;
+const chargeSpacing = 34;
+const maximumChargeSpeed = 100;
+const referenceCurrent = 0.01;
 const formatter = new Intl.NumberFormat('es-AR', { maximumSignificantDigits: 5 });
 const scientific = new Intl.NumberFormat('es-AR', { notation: 'scientific', maximumSignificantDigits: 4 });
 let intermediate = [];
@@ -350,9 +353,11 @@ function paintCurrent(time = 0) {
   const moving = animateCurrent.checked && !reducedMotion.matches;
   const electrons = currentDirection.checked;
   const elapsedSeconds = Math.max(0, time - flowStartTime) / 1000;
+  const currentScale = flowSegments.reduce((largest, segment) =>
+    Math.max(largest, segment.magnitude), referenceCurrent);
   flowContext.strokeStyle = '#fff';
   flowContext.lineWidth = 1.25;
-  for (const { x, y, dx: conventionalDx, dy: conventionalDy, length, speed, color } of flowSegments) {
+  for (const { x, y, dx: conventionalDx, dy: conventionalDy, length, magnitude, color, offset, pathLength } of flowSegments) {
     const startX = electrons ? x + conventionalDx * length : x;
     const startY = electrons ? y + conventionalDy * length : y;
     const dx = electrons ? -conventionalDx : conventionalDx;
@@ -368,8 +373,12 @@ function paintCurrent(time = 0) {
     flowContext.lineTo(arrowX - dx * 5 + dy * 4, arrowY - dy * 5 - dx * 4);
     flowContext.fill();
     if (!moving) continue;
-    const spacing = Math.min(length - 10, 34);
-    for (let position = 5 + (elapsedSeconds * speed) % spacing; position < length - 5; position += spacing) {
+    const speed = maximumChargeSpeed * (magnitude / currentScale);
+    const distanceFromStart = electrons ? pathLength - offset - length : offset;
+    const phase = (elapsedSeconds * speed - distanceFromStart + chargeSpacing / 2) % chargeSpacing;
+    const firstPosition = phase < 0 ? phase + chargeSpacing : phase;
+    for (let position = firstPosition; position < length; position += chargeSpacing) {
+      flowContext.globalAlpha = Math.min(1, position / 5, (length - position) / 5);
       const chargeX = startX + dx * position;
       const chargeY = startY + dy * position;
       flowContext.beginPath();
@@ -384,6 +393,7 @@ function paintCurrent(time = 0) {
       }
       flowContext.stroke();
     }
+    flowContext.globalAlpha = 1;
   }
   if (moving && flowSegments.length) animationFrame = requestAnimationFrame(paintCurrent);
 }
@@ -455,15 +465,17 @@ function drawCircuit(result) {
   }
 
   const tolerance = Math.abs(result?.current ?? 0) * Number.EPSILON * 16;
-  function markFlow(x1, y1, x2, y2, current, color = commonFlowColor) {
+  function markFlow(x1, y1, x2, y2, current, color = commonFlowColor, branchLeft = x1, branchRight = x2) {
     const length = Math.hypot(x2 - x1, y2 - y1);
     if (Math.abs(current) <= tolerance || length < 16) return;
     const forward = current > 0;
     const direction = forward ? 1 : -1;
-    // Logarithmic scale keeps the wide range of currents readable on screen.
-    const speed = 12 * Math.log1p(Math.abs(current) / 0.001);
+    // Keep the spacing phase across the resistor and the wire on either side.
+    const offset = forward ? x1 - branchLeft : branchRight - x2;
+    const pathLength = branchRight === branchLeft ? length : branchRight - branchLeft;
     flowSegments.push({ x: forward ? x1 : x2, y: forward ? y1 : y2,
-      dx: direction * (x2 - x1) / length, dy: direction * (y2 - y1) / length, length, speed, color });
+      dx: direction * (x2 - x1) / length, dy: direction * (y2 - y1) / length,
+      length, magnitude: Math.abs(current), color, offset, pathLength });
   }
 
   const x = node => 40 + nodes.indexOf(node) * 120;
@@ -523,22 +535,22 @@ function drawCircuit(result) {
     const current = connection.current * (x(from) < x(to) ? 1 : -1);
     const color = branchColors.get(connection);
     line([left, y], [left + 34, y]);
-    markFlow(left, y, left + 34, y, current, color);
-    markFlow(left + 34, y, left + 86, y, current, color);
     const isWire = value !== '' && Number(value) === 0;
     if (isWire) line([left + 34, y], [left + 86, y]);
     else drawResistor(left + 34, left + 86, y);
     ctx.fillText('R' + id + (isWire ? ' (0 Ω)' : ''), left + 60, y - 15);
     // Bridges keep the branch continuous at crossings without a junction.
     let start = left + 86;
+    let flowStart = left;
     for (let crossing = left + 120; crossing < right; crossing += 120) {
       line([start, y], [crossing - 7, y]);
-      markFlow(start, y, crossing - 7, y, current, color);
+      markFlow(flowStart, y, crossing - 7, y, current, color, left, right);
       drawWireCrossing(crossing, y);
       start = crossing + 7;
+      flowStart = start;
     }
     line([start, y], [right, y]);
-    markFlow(start, y, right, y, current, color);
+    markFlow(flowStart, y, right, y, current, color, left, right);
     junction(left, y);
     junction(right, y);
   });

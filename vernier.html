@@ -268,7 +268,9 @@
   const mostrarPrecision = document.querySelector('#mostrarPrecision');
   const mostrarResultado = document.querySelector('#mostrarResultado');
   const mostrarCoincidencia = document.querySelector('#mostrarCoincidencia');
-  const x0 = 75, yRegla = 145, yNonio = 145;
+  const x0 = 75;
+  const yTituloRelativa = -115, yPieRelativa = 145;
+  let yRegla, yNonio;
   let pxPorMm = 6;
   let divisiones = Number(divisionesInput.value);
   let unidad = unidadInput.value;
@@ -300,6 +302,13 @@
     ctx.font = `${tam}px Arial`; ctx.textAlign=alinear; ctx.fillStyle=color; ctx.fillText(t,x,y);
   }
   function dibujar() {
+    const titulo = `REGLA PRINCIPAL (${unidad})`;
+    const pie = `NONIO: ${divisiones} divisiones (p=${coma(pasoReglaMm/divisiones)} ${unidad})`;
+    ctx.font = '15px Arial';
+    const bordeSuperior = yTituloRelativa - ctx.measureText(titulo).actualBoundingBoxAscent;
+    ctx.font = '12px Arial';
+    const bordeInferior = yPieRelativa + ctx.measureText(pie).actualBoundingBoxDescent;
+    yNonio = yRegla = (canvas.height - bordeSuperior - bordeInferior) / 2;
     // Deja espacio para el nonio completo incluso en la abertura máxima.
     pxPorMm = Math.min(6, (canvas.width-x0-36)/(120+(divisiones-1)*pasoReglaMm));
     ctx.clearRect(0,0,canvas.width,canvas.height);
@@ -324,7 +333,7 @@
         if(mm%10===0) texto(coma(mm),x,yRegla-77,16);
       }
     }
-    texto(`REGLA PRINCIPAL (${unidad})`, canvas.width/2,30,15,'center','#314986');
+    texto(titulo,canvas.width/2,yRegla+yTituloRelativa,15,'center','#314986');
     // Carro: su cero corresponde a la medida elegida.
     const xcero=x0+medida*pxPorMm;
     const totalPasos=Math.round(medida*divisiones/pasoReglaMm);
@@ -343,7 +352,7 @@
       linea(x,yNonio,x,yNonio+alto,anchoMarca,colorMarca);
       if(i%5===0||i===divisiones) texto(i,x,yNonio+85,12,'center','#263238');
     }
-    texto(`NONIO: ${divisiones} divisiones (p=${coma(pasoReglaMm/divisiones)} ${unidad})`,xcero+largoNonio/2,yNonio+145,12,'center','#263238');
+    texto(pie,xcero+largoNonio/2,yNonio+yPieRelativa,12,'center','#263238');
     const xCoincide=xcero+coincidencia*pasoNonio*pxPorMm;
     if (mostrarCoincidencia.checked) {
       texto(`Coincidencia n = ${coincidencia}`,xCoincide,yNonio+110,13,'center','#c2410c');
